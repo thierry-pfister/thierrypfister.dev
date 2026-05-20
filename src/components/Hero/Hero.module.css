@@ -240,10 +240,10 @@
 }
 .infoSub {
   font-family: var(--font-mono);
-  font-size: 8px;
-  letter-spacing: .12em;
+  font-size: 10px;
+  letter-spacing: .1em;
   text-transform: uppercase;
-  color: var(--ink3);
+  color: var(--ink2);
 }
 .btns {
   display: flex;
@@ -325,11 +325,31 @@
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  .typeBlock { padding-right: 44px; }
-  .titlePfstr { font-size: clamp(90px, 20vw, 160px); }
-  .wBuild, .wDeploy, .wRepeat { font-size: clamp(32px, 8.5vw, 70px); }
-  .handLayer { top: 28%; }
+  .typeBlock {
+    padding: 0 20px;
+  }
+
+  .titlePfstr { font-size: clamp(72px, 18vw, 130px); }
+
+  .wBuild, .wDeploy, .wRepeat { font-size: clamp(26px, 7vw, 60px); }
+
+  .handLayer { top: 26%; left: 2%; }
+  .hand1 { font-size: clamp(22px, 4.8vw, 40px); }
+
   .canvasLeft, .canvasRight { display: none; }
   .verticalText { display: none; }
-  .d6 { display: none; }
+
+  /* hide most doodles — too cluttered on small screens */
+  .d1, .d2, .d3, .d4, .d5, .d6, .d7, .d8, .d9 { display: none; }
+
+  .bottomRow {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 20px 24px;
+    gap: 14px;
+  }
+
+  .scrollHint { display: none; }
+
+  .btns { flex-wrap: wrap; }
 }
