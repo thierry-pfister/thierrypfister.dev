@@ -88,6 +88,9 @@ export default function Hero() {
       <div className={styles.blobBut}   id="bbut" />
       <div className={styles.blobBlush} id="bblush" />
 
+      {/* Editorial grid */}
+      <div className={styles.grid} />
+
       {/* 3D — client-side only, no SSR */}
       <HeroCanvases />
 
