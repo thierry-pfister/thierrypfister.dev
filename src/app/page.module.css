@@ -1,0 +1,16 @@
+.placeholder {
+  height: 100vh;
+  background: var(--cream2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholderLabel {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(40px, 6vw, 80px);
+  letter-spacing: -0.03em;
+  opacity: 0.06;
+  color: var(--ink);
+}
