@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PFSTR_ — Thierry Pfister</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,900;1,900&family=Caveat:wght@600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream:#F4F0E8; --cream2:#EDE8DF;
+  --butter:#F0D97A; --butter-d:#C8A830;
+  --indigo:#6366F1; --indigo-l:#818CF8; --indigo-p:#A5B4FC;
+  --lavender:#C4B8E8; --lav-d:#7B6EC4; --lav-deep:#5B4EAA;
+  --peach:#F2B89A; --coral:#E8604A;
+  --sage:#B8D4B0; --ink:#14120F; --ink2:#2A2826; --ink3:#6A6460;
+}
+html { height:100%; }
+body { background:var(--cream); color:var(--ink); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+
+.grain {
+  position:fixed; inset:0; pointer-events:none; z-index:9997;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:0.03; mix-blend-mode:multiply;
+}
+
+/* ── HERO ── */
+.hero { position:relative; width:100%; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+
+/* ── BLOBS ── */
+.blob { position:absolute; border-radius:50%; pointer-events:none; }
+.b-red   { width:52vw;height:52vw; background:radial-gradient(circle,rgba(232,96,74,.58) 0%,rgba(240,120,80,.38) 45%,transparent 75%); filter:blur(70px); top:-12%;right:8%; z-index:1; }
+.b-lav   { width:46vw;height:46vw; background:radial-gradient(circle,rgba(184,168,232,.62) 0%,rgba(139,126,212,.4) 52%,transparent 78%); filter:blur(62px); top:-5%;left:22%; z-index:1; }
+.b-but   { width:36vw;height:36vw; background:radial-gradient(circle,rgba(240,217,122,.52) 0%,rgba(242,184,154,.38) 55%,transparent 80%); filter:blur(52px); bottom:2%;left:6%; z-index:1; }
+.b-blush { width:30vw;height:30vw; background:radial-gradient(circle,rgba(232,80,60,.35) 0%,rgba(240,120,100,.22) 55%,transparent 80%); filter:blur(56px); bottom:10%;right:4%; z-index:1; }
+
+/* ── 3D CANVASES — BEHIND type, big, atmospheric ── */
+/* Left: large torus ring — bleeds off bottom-left */
+#canvas-left {
+  position:absolute;
+  left:-80px; bottom:-80px;
+  width:420px; height:420px;
+  z-index:8; /* behind type z-index:20 */
+  pointer-events:none;
+  opacity:0.88;
+}
+/* Right: large organic blob — bleeds off top-right */
+#canvas-right {
+  position:absolute;
+  right:-60px; top:-40px;
+  width:380px; height:380px;
+  z-index:8;
+  pointer-events:none;
+  opacity:0.82;
+}
+
+/* ── NAV ── */
+nav {
+  position:relative; z-index:200;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 44px; flex-shrink:0;
+}
+.nav-logo { font-family:'Nunito',sans-serif; font-weight:900; font-size:18px; letter-spacing:-0.03em; color:var(--ink); text-decoration:none; }
+.nav-logo em { color:var(--butter-d); font-style:normal; }
+.nav-links { display:flex; gap:30px; list-style:none; }
+.nav-links a { font-family:'Space Mono',monospace; font-size:8.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink3); text-decoration:none; transition:color .2s; }
+.nav-links a:hover { color:var(--ink); }
+.nav-right { display:flex; align-items:center; gap:10px; }
+.ofw { font-family:'Space Mono',monospace; font-weight:700; font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; padding:8px 16px; border-radius:99px; background:var(--sage); color:#1A4A18; border:none; display:flex; align-items:center; gap:7px; box-shadow:0 2px 0 rgba(0,0,0,.08); }
+.ofw-dot { width:6px; height:6px; border-radius:50%; background:#2A6A24; animation:blink-dot 2s ease-in-out infinite; flex-shrink:0; }
+@keyframes blink-dot { 0%,100%{box-shadow:0 0 0 0 rgba(42,106,36,.5)} 50%{box-shadow:0 0 0 5px rgba(42,106,36,0)} }
+.nav-menu { width:34px; height:34px; border-radius:50%; border:1.5px solid rgba(0,0,0,.14); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer; background:transparent; }
+.nav-menu span { width:13px; height:1.5px; background:var(--ink); border-radius:2px; }
+
+/* ── EDITORIAL MARKS ── */
+.plus { position:absolute; z-index:5; font-family:'DM Sans',sans-serif; font-weight:300; font-size:20px; color:rgba(0,0,0,.16); pointer-events:none; line-height:1; }
+.p1 { top:16%;left:9%; } .p2 { top:13%;right:26%; } .p3 { bottom:24%;right:9%; } .p4 { bottom:20%;left:40%; }
+
+/* ── DOODLES ── */
+.doodle { position:absolute; pointer-events:none; z-index:15; opacity:0; }
+.d1 { top:22%;left:4%; }
+.d2 { top:8%;right:32%;transform:rotate(15deg); }
+.d3 { bottom:28%;left:12%; }
+.d4 { bottom:20%;right:18%; }
+.d5 { top:34%;left:20%; }
+.d6 { top:50%;left:3%;transform:translateY(-50%); }
+.d7 { bottom:30%;right:40%; }
+.d8 { top:56%;left:10%; }
+.d9 { top:10%;right:14%; }
+
+/* ── TYPE BLOCK ── */
+.type-block {
+  position:relative; z-index:20;
+  flex:1; display:flex; flex-direction:column; justify-content:center;
+  /* leave room on right for vertical text */
+  padding:0 100px 0 44px;
+  overflow:visible;
+}
+
+/* PFSTR */
+.title-pfstr {
+  font-family:'Nunito',sans-serif; font-weight:900;
+  font-size:clamp(130px,22vw,300px);
+  line-height:0.82; letter-spacing:-0.055em;
+  color:var(--ink); display:block; position:relative;
+  white-space:nowrap; margin-right:-3vw; margin-bottom:-0.04em;
+}
+.title-pfstr em { color:var(--butter-d); font-style:normal; }
+
+/* HANDWRITING — white, cuts through PFSTR */
+.hand-layer {
+  position:absolute;
+  top:32%; left:3%;
+  z-index:200;
+  pointer-events:none; user-select:none;
+  isolation:isolate;
+}
+.hand-1 {
+  font-family:'Caveat',cursive; font-weight:700;
+  font-size:clamp(36px,5.2vw,68px);
+  color:#FFFFFF;
+  transform:rotate(-6deg);
+  display:inline-block;
+  text-shadow:0px 2px 20px rgba(0,0,0,.5),0px 0px 40px rgba(0,0,0,.25);
+  white-space:nowrap; line-height:1.1;
+}
+
+/* BUILD DEPLOY REPEAT */
+.title-bdr { display:flex; align-items:baseline; gap:0.05em; flex-wrap:nowrap; padding-left:.5vw; }
+.w-build  { font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(38px,6.2vw,88px);line-height:.88;letter-spacing:-0.04em;color:var(--indigo); }
+.w-deploy { font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(38px,6.2vw,88px);line-height:.88;letter-spacing:-0.04em;color:var(--butter-d);margin-left:.06em; }
+.w-repeat { font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(38px,6.2vw,88px);line-height:.88;letter-spacing:-0.04em;color:var(--lav-deep);margin-left:.06em; }
+
+/* ── BASED IN SWITZERLAND — vertical right side ── */
+.vertical-text {
+  position:absolute;
+  right:18px; top:50%;
+  transform:translateY(-50%) rotate(90deg);
+  transform-origin:center center;
+  z-index:200;
+  white-space:nowrap;
+  display:flex; align-items:center; gap:14px;
+}
+.vt-line { width:40px; height:1px; background:rgba(0,0,0,.2); }
+.vt-text {
+  font-family:'Space Mono',monospace; font-size:9px;
+  letter-spacing:.22em; text-transform:uppercase;
+  color:var(--ink3);
+}
+.vt-dot { width:4px; height:4px; border-radius:50%; background:var(--lav-d); flex-shrink:0; }
+
+/* ── BOTTOM ROW ── */
+.bottom-row {
+  position:relative; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 44px 24px; flex-shrink:0; gap:20px;
+}
+.info-block { display:flex; flex-direction:column; gap:3px; }
+.info-name { font-family:'Nunito',sans-serif; font-weight:900; font-size:clamp(13px,1.4vw,18px); color:var(--ink); letter-spacing:-0.01em; }
+.info-sub { font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink3); }
+.btns { display:flex; gap:10px; align-items:center; }
+.btn-main { font-family:'Nunito',sans-serif; font-weight:900; font-size:13px; padding:11px 24px; border-radius:99px; background:var(--ink); color:var(--cream); border:none; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 0 rgba(0,0,0,.22); transition:transform .2s,box-shadow .2s; }
+.btn-main:hover { transform:translateY(-3px); box-shadow:0 8px 0 rgba(0,0,0,.16); }
+.btn-sec { font-family:'Nunito',sans-serif; font-weight:900; font-size:13px; background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:8px; color:var(--ink); transition:gap .2s; }
+.btn-sec:hover { gap:12px; }
+.play-btn { width:34px; height:34px; border-radius:50%; border:1.5px solid rgba(0,0,0,.16); display:flex; align-items:center; justify-content:center; background:transparent; transition:background .2s; }
+.btn-sec:hover .play-btn { background:var(--lavender); }
+.scroll-hint { display:flex; align-items:center; gap:10px; font-family:'Space Mono',monospace; font-size:7.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink3); }
+.scroll-line { width:36px; height:1px; background:rgba(0,0,0,.16); }
+.scroll-circle { width:30px; height:30px; border-radius:50%; border:1.5px solid rgba(0,0,0,.16); display:flex; align-items:center; justify-content:center; animation:scb 1.8s ease-in-out infinite; }
+@keyframes scb { 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
+
+@media(max-width:900px){
+  .nav-links { display:none; }
+  nav,.bottom-row { padding-left:20px;padding-right:20px; }
+  #canvas-left,#canvas-right { display:none; }
+  .title-pfstr { font-size:clamp(90px,20vw,160px); }
+  .w-build,.w-deploy,.w-repeat { font-size:clamp(32px,8.5vw,70px); }
+  .hand-layer { top:28%; }
+  .type-block { padding-right:44px; }
+  .vertical-text { display:none; }
+  .d6 { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<section class="hero" id="hero">
+
+  <!-- BLOBS -->
+  <div class="blob b-red"   id="bred"></div>
+  <div class="blob b-lav"   id="blav"></div>
+  <div class="blob b-but"   id="bbut"></div>
+  <div class="blob b-blush" id="bblush"></div>
+
+  <!-- 3D — behind type, big, atmospheric -->
+  <canvas id="canvas-left"></canvas>
+  <canvas id="canvas-right"></canvas>
+
+  <!-- editorial marks -->
+  <div class="plus p1">+</div>
+  <div class="plus p2">+</div>
+  <div class="plus p3">+</div>
+  <div class="plus p4">+</div>
+
+  <!-- DOODLES -->
+  <div class="doodle d1" id="d1">
+    <svg width="70" height="70" viewBox="0 0 70 70" fill="none">
+      <path d="M35 8 C52 6,64 18,63 34 C62 52,48 64,32 63 C16 62,5 49,7 33 C9 17,22 7,35 8 Z" stroke="rgba(0,0,0,0.18)" stroke-width="1.4" stroke-linecap="round" fill="none" stroke-dasharray="3 4"/>
+    </svg>
+  </div>
+  <div class="doodle d2" id="d2">
+    <svg width="56" height="28" viewBox="0 0 56 28" fill="none">
+      <path d="M4 14 C12 8,28 6,44 14" stroke="rgba(0,0,0,0.2)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+      <path d="M38 8 L44 14 L38 20" stroke="rgba(0,0,0,0.2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  </div>
+  <div class="doodle d3" id="d3">
+    <svg width="320" height="18" viewBox="0 0 320 18" fill="none">
+      <path d="M4 10 C30 3,60 16,90 9 C120 2,150 15,180 9 C210 3,240 14,270 8 C290 4,310 11,316 9" stroke="rgba(91,78,170,0.35)" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    </svg>
+  </div>
+  <div class="doodle d4" id="d4">
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <path d="M22 22 C22 18,26 15,30 18 C34 21,33 28,28 31 C22 34,15 31,13 25 C11 18,15 11,22 9 C30 7,38 12,40 20" stroke="rgba(0,0,0,0.16)" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+    </svg>
+  </div>
+  <div class="doodle d5" id="d5">
+    <svg width="120" height="60" viewBox="0 0 120 60" fill="none">
+      <path d="M4 8 C20 4,50 20,80 30 C100 38,114 44,116 52" stroke="rgba(232,96,74,0.3)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      <path d="M110 50 L116 52 L112 58" stroke="rgba(232,96,74,0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  </div>
+  <div class="doodle d6" id="d6">
+    <svg width="22" height="160" viewBox="0 0 22 160" fill="none">
+      <path d="M18 4 C8 12,4 36,6 80 C4 124,8 148,18 156" stroke="rgba(0,0,0,0.12)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+    </svg>
+  </div>
+  <div class="doodle d7" id="d7">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <line x1="10" y1="2" x2="10" y2="18" stroke="rgba(0,0,0,0.18)" stroke-width="1.3" stroke-linecap="round"/>
+      <line x1="2" y1="10" x2="18" y2="10" stroke="rgba(0,0,0,0.18)" stroke-width="1.3" stroke-linecap="round"/>
+      <line x1="4" y1="4" x2="16" y2="16" stroke="rgba(0,0,0,0.12)" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="16" y1="4" x2="4" y2="16" stroke="rgba(0,0,0,0.12)" stroke-width="1.1" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="doodle d8" id="d8">
+    <svg width="200" height="12" viewBox="0 0 200 12" fill="none">
+      <path d="M2 6 C30 2,70 10,110 5 C150 0,180 8,198 5" stroke="rgba(200,168,48,0.4)" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </svg>
+  </div>
+  <div class="doodle d9" id="d9">
+    <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+      <path d="M19 4 C28 3,35 10,34 19 C33 28,26 35,17 34 C8 33,2 26,3 17 C4 8,11 3,19 4" stroke="rgba(91,78,170,0.22)" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+    </svg>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">PFSTR<em>_</em></a>
+    <ul class="nav-links">
+      <li><a href="#">Work</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Services</a></li>
+      <li><a href="#">Stack</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="ofw"><div class="ofw-dot"></div>Open for work</div>
+      <div class="nav-menu"><span></span><span></span></div>
+    </div>
+  </nav>
+
+  <!-- TYPE -->
+  <div class="type-block">
+
+    <!-- HANDWRITING — white, cuts through PFSTR -->
+    <div class="hand-layer" id="hand-layer">
+      <div class="hand-1" id="hand1">freelance dev &amp; creator ✦</div>
+    </div>
+
+    <span class="title-pfstr" id="tp">PFSTR<em>_</em></span>
+
+    <div class="title-bdr" id="tbdr">
+      <span class="w-build">BUILD</span>
+      <span class="w-deploy">DEPLOY</span>
+      <span class="w-repeat">REPEAT.</span>
+    </div>
+  </div>
+
+  <!-- BASED IN SWITZERLAND — vertical right -->
+  <div class="vertical-text" id="vtxt">
+    <div class="vt-line"></div>
+    <div class="vt-dot"></div>
+    <div class="vt-text">Based in Switzerland</div>
+    <div class="vt-dot"></div>
+    <div class="vt-line"></div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom-row">
+    <div class="info-block">
+      <div class="info-name">I'm Thierry Pfister</div>
+      <div class="info-sub">Dev · designer · builder · Switzerland</div>
+    </div>
+    <div class="btns">
+      <button class="btn-main">
+        Let's work together
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 11L11 1M11 1H4M11 1V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <button class="btn-sec">
+        <div class="play-btn">
+          <svg width="9" height="10" viewBox="0 0 9 10" fill="none"><path d="M1 1L8 5L1 9V1Z" fill="currentColor"/></svg>
+        </div>
+        View my work
+      </button>
+    </div>
+    <div class="scroll-hint">
+      <div class="scroll-line"></div>
+      Scroll to explore
+      <div class="scroll-circle">
+        <svg width="9" height="11" viewBox="0 0 9 11" fill="none"><path d="M4.5 1V10M1 6.5L4.5 10L8 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<div style="height:100vh;background:var(--cream2);display:flex;align-items:center;justify-content:center;">
+  <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(40px,6vw,80px);letter-spacing:-0.03em;opacity:0.06;">PROJECTS_</div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   THREE.JS — TWO BIG ATMOSPHERIC 3D OBJECTS
+
+   LEFT:  Giant torus knot — indigo/purple
+          sits bottom-left, bleeds off screen
+          slowly rotates, feels massive
+
+   RIGHT: Large organic blob — peach/coral
+          sits top-right, bleeds off screen
+          morphs gently, atmospheric
+═══════════════════════════════════════ */
+function makeLeft(canvas) {
+  try {
+    if (!canvas || typeof THREE === 'undefined') return;
+    var w = canvas.offsetWidth || 420;
+    var h = canvas.offsetHeight || 420;
+    var renderer = new THREE.WebGLRenderer({ canvas:canvas, antialias:true, alpha:true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(w, h);
+
+    var scene = new THREE.Scene();
+    var cam = new THREE.PerspectiveCamera(55, w/h, 0.1, 100);
+    cam.position.set(0, 0, 4.5);
+
+    /* Warm indigo lighting */
+    scene.add(new THREE.AmbientLight(0xC4B8E8, 0.6));
+    var l1 = new THREE.PointLight(0x818CF8, 4, 12);
+    l1.position.set(2, 2, 3); scene.add(l1);
+    var l2 = new THREE.PointLight(0x5B4EAA, 2.5, 8);
+    l2.position.set(-2, -1, 2); scene.add(l2);
+    var l3 = new THREE.DirectionalLight(0xFFFFFF, 0.4);
+    l3.position.set(0, 4, 2); scene.add(l3);
+
+    /* Big torus knot — feels complex and interesting */
+    var geo = new THREE.TorusKnotGeometry(1.2, 0.42, 160, 20, 2, 3);
+    var mat = new THREE.MeshPhongMaterial({
+      color: 0x7B6EC4,
+      shininess: 90,
+      specular: 0xC4B8E8,
+      transparent: true,
+      opacity: 0.92,
+    });
+    var knot = new THREE.Mesh(geo, mat);
+    /* offset so it bleeds bottom-left off canvas */
+    knot.position.set(-0.4, -0.3, 0);
+    scene.add(knot);
+
+    /* Mouse */
+    var mx = { x:0, y:0 };
+    window.addEventListener('mousemove', function(e) {
+      mx.x = (e.clientX/window.innerWidth - 0.5)*2;
+      mx.y = -(e.clientY/window.innerHeight - 0.5)*2;
+    });
+
+    var t = 0;
+    (function tick() {
+      requestAnimationFrame(tick); t += 0.008;
+      knot.rotation.x = t * 0.3 + mx.y * 0.1;
+      knot.rotation.y = t * 0.4 + mx.x * 0.12;
+      knot.rotation.z = t * 0.15;
+      l1.position.x = Math.sin(t * 0.6) * 3;
+      l1.position.y = Math.cos(t * 0.4) * 2;
+      renderer.render(scene, cam);
+    })();
+  } catch(e) { console.warn('left 3D:', e); }
+}
+
+function makeRight(canvas) {
+  try {
+    if (!canvas || typeof THREE === 'undefined') return;
+    var w = canvas.offsetWidth || 380;
+    var h = canvas.offsetHeight || 380;
+    var renderer = new THREE.WebGLRenderer({ canvas:canvas, antialias:true, alpha:true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(w, h);
+
+    var scene = new THREE.Scene();
+    var cam = new THREE.PerspectiveCamera(50, w/h, 0.1, 100);
+    cam.position.set(0, 0, 4.5);
+
+    /* Warm peach/coral lighting */
+    scene.add(new THREE.AmbientLight(0xF4F0E8, 0.5));
+    var l1 = new THREE.PointLight(0xF2B89A, 4, 12);
+    l1.position.set(-2, 2, 3); scene.add(l1);
+    var l2 = new THREE.PointLight(0xE8604A, 2.5, 8);
+    l2.position.set(2, -1, 2); scene.add(l2);
+    var l3 = new THREE.DirectionalLight(0xFFFFFF, 0.5);
+    l3.position.set(0, 3, 1); scene.add(l3);
+
+    /* Morphing organic blob — icosahedron with displacement */
+    var geo = new THREE.IcosahedronGeometry(1.4, 4);
+    var origPos = geo.attributes.position.array.slice();
+    var mat = new THREE.MeshPhongMaterial({
+      color: 0xF2B89A,
+      shininess: 110,
+      specular: 0xFFFFFF,
+      transparent: true,
+      opacity: 0.9,
+    });
+    var blob = new THREE.Mesh(geo, mat);
+    blob.position.set(0.3, 0.2, 0);
+    scene.add(blob);
+
+    var mx = { x:0, y:0 };
+    window.addEventListener('mousemove', function(e) {
+      mx.x = (e.clientX/window.innerWidth - 0.5)*2;
+      mx.y = -(e.clientY/window.innerHeight - 0.5)*2;
+    });
+
+    var t = 0;
+    (function tick() {
+      requestAnimationFrame(tick); t += 0.009;
+
+      /* morph */
+      var pos = geo.attributes.position.array;
+      for (var i = 0; i < pos.length; i += 3) {
+        var ox = origPos[i], oy = origPos[i+1], oz = origPos[i+2];
+        var n = Math.sin(ox*2.2+t*0.7)*0.1 + Math.sin(oy*1.8+t*0.5)*0.08 + Math.cos(oz*2+t*0.6)*0.07;
+        pos[i]   = ox + (ox/1.4)*n;
+        pos[i+1] = oy + (oy/1.4)*n;
+        pos[i+2] = oz + (oz/1.4)*n;
+      }
+      geo.attributes.position.needsUpdate = true;
+      geo.computeVertexNormals();
+
+      blob.rotation.y = t * 0.25 + mx.x * 0.1;
+      blob.rotation.x = t * 0.15 + mx.y * 0.08;
+      blob.position.y = 0.2 + Math.sin(t * 0.5) * 0.12;
+
+      l1.position.x = Math.sin(t * 0.5) * -3;
+      l1.position.y = Math.cos(t * 0.4) * 2;
+      renderer.render(scene, cam);
+    })();
+  } catch(e) { console.warn('right 3D:', e); }
+}
+
+/* ── GSAP ── */
+window.addEventListener('load', function() {
+  makeLeft(document.getElementById('canvas-left'));
+  makeRight(document.getElementById('canvas-right'));
+
+  if (typeof gsap === 'undefined') return;
+
+  /* blobs */
+  gsap.from('#bred',   {opacity:0,scale:.5,duration:2,  ease:'power3.out',delay:.05});
+  gsap.from('#blav',   {opacity:0,scale:.5,duration:2,  ease:'power3.out',delay:.15});
+  gsap.from('#bbut',   {opacity:0,scale:.5,duration:1.8,ease:'power3.out',delay:.1});
+  gsap.from('#bblush', {opacity:0,scale:.5,duration:1.8,ease:'power3.out',delay:.2});
+
+  /* nav */
+  gsap.from('nav', {opacity:0,y:-16,duration:.6,ease:'power3.out',delay:.25});
+
+  /* type */
+  gsap.from('#tp',   {opacity:0,y:80, duration:1.1,ease:'power4.out',delay:.4});
+  gsap.from('#tbdr', {opacity:0,y:60, duration:1,  ease:'power4.out',delay:.54});
+
+  /* handwriting drops onto type */
+  gsap.from('#hand-layer', {opacity:0,y:-40,duration:1.1,ease:'back.out(1.5)',delay:.72});
+
+  /* vertical text slides in from right */
+  gsap.from('#vtxt', {opacity:0,x:20,duration:.8,ease:'power3.out',delay:.85});
+
+  /* bottom */
+  gsap.from('.bottom-row', {opacity:0,y:20,duration:.7,ease:'power3.out',delay:.78});
+
+  /* 3D objects drift in from their respective corners */
+  gsap.from('#canvas-left',  {opacity:0,x:-80,y:80, duration:1.4,ease:'power3.out',delay:.4});
+  gsap.from('#canvas-right', {opacity:0,x:80, y:-80,duration:1.4,ease:'power3.out',delay:.5});
+
+  /* doodles */
+  ['#d1','#d2','#d3','#d4','#d5','#d6','#d7','#d8','#d9'].forEach(function(sel,i){
+    gsap.to(sel, {opacity:1,duration:.6,ease:'power2.out',delay:.9+i*0.08});
+  });
+
+  /* float loops */
+  gsap.to('#hand-layer', {y:5,duration:4,  ease:'sine.inOut',yoyo:true,repeat:-1,delay:1.2});
+  gsap.to('#d1',         {y:-5,duration:3.8,ease:'sine.inOut',yoyo:true,repeat:-1,delay:1.2});
+  gsap.to('#d4',         {y:4, duration:3.2,ease:'sine.inOut',yoyo:true,repeat:-1,delay:1.5});
+  gsap.to('#d9',         {y:-4,x:3,duration:4,ease:'sine.inOut',yoyo:true,repeat:-1,delay:1.0});
+
+  /* 3D objects slow atmospheric float */
+  gsap.to('#canvas-left',  {y:18, duration:4.5,ease:'sine.inOut',yoyo:true,repeat:-1,delay:1});
+  gsap.to('#canvas-right', {y:-14,duration:5,  ease:'sine.inOut',yoyo:true,repeat:-1,delay:1.2});
+
+  /* mouse parallax */
+  document.addEventListener('mousemove', function(e) {
+    var mx = e.clientX/window.innerWidth  - 0.5;
+    var my = e.clientY/window.innerHeight - 0.5;
+    gsap.to('#bred',         {x:mx*-25,y:my*-18,duration:2.2,ease:'power1.out'});
+    gsap.to('#blav',         {x:mx*20, y:my*14, duration:2,  ease:'power1.out'});
+    gsap.to('#tp',           {x:mx*8,  y:my*5,  duration:1.5,ease:'power2.out'});
+    gsap.to('#tbdr',         {x:mx*-5, y:my*-3, duration:1.8,ease:'power2.out'});
+    gsap.to('#hand-layer',   {x:mx*15, y:my*9,  duration:1.2,ease:'power2.out'});
+    /* 3D objects parallax opposite — atmospheric depth */
+    gsap.to('#canvas-left',  {x:mx*-18,y:my*12, duration:2.5,ease:'power1.out'});
+    gsap.to('#canvas-right', {x:mx*14, y:my*-10,duration:2.5,ease:'power1.out'});
+    gsap.to('#d3',           {x:mx*6,  duration:2,ease:'power1.out'});
+    gsap.to('#d5',           {x:mx*10, y:my*6,  duration:1.8,ease:'power1.out'});
+  });
+
+  /* SCROLL — fly off */
+  window.addEventListener('scroll', function() {
+    var p = Math.min(window.scrollY / window.innerHeight, 1);
+    gsap.to('#canvas-left',  {x:-180*p,y:200*p, rotation:-180*p,opacity:.88-p*1,duration:.1,ease:'none'});
+    gsap.to('#canvas-right', {x:180*p, y:-180*p,rotation:180*p, opacity:.82-p*1,duration:.1,ease:'none'});
+    gsap.to('#tp',           {y:-p*50, opacity:1-p*.7,duration:.1,ease:'none'});
+    gsap.to('#tbdr',         {y:-p*30, opacity:1-p*.7,duration:.1,ease:'none'});
+    gsap.to('#hand-layer',   {y:5-p*40,opacity:1-p*.8,duration:.1,ease:'none'});
+    gsap.to('#bred',         {y:-p*35, opacity:.58-p*.58,duration:.1,ease:'none'});
+    gsap.to('#blav',         {y:-p*25, opacity:.62-p*.62,duration:.1,ease:'none'});
+    gsap.to('.doodle',       {opacity:p>0.1?0:1,duration:.2,ease:'none'});
+    gsap.to('#vtxt',         {opacity:1-p*2,duration:.1,ease:'none'});
+  });
+});
+</script>
+</body>
+</html>
