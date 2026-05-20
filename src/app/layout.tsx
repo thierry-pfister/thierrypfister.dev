@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Nunito, Caveat, DM_Sans, Space_Mono } from 'next/font/google'
+import Nav from '@/components/Nav/Nav'
 import './globals.css'
 
 const nunito = Nunito({
@@ -45,7 +46,10 @@ export default function RootLayout({
       lang="en"
       className={`${nunito.variable} ${caveat.variable} ${dmSans.variable} ${spaceMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <Nav />
+        {children}
+      </body>
     </html>
   )
 }
