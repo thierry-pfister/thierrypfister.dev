@@ -22,9 +22,6 @@ export default function Hero() {
       gsap.from('#hand-layer', { opacity: 0, y: -40, duration: 1.1, ease: 'back.out(1.5)', delay: .72 })
       gsap.from('#vtxt',   { opacity: 0, x: 20,  duration: .8,  ease: 'power3.out', delay: .85 })
       gsap.from('#bottom-row', { opacity: 0, y: 20, duration: .7, ease: 'power3.out', delay: .78 })
-      gsap.from('#canvas-left',  { opacity: 0, x: -80, y: 80,  duration: 1.4, ease: 'power3.out', delay: .4 })
-      gsap.from('#canvas-right', { opacity: 0, x: 80,  y: -80, duration: 1.4, ease: 'power3.out', delay: .5 })
-
       /* doodles fade in staggered */
       const doodles = ['#d1','#d2','#d3','#d4','#d5','#d6','#d7','#d8','#d9']
       doodles.forEach((sel, i) => {
@@ -36,8 +33,6 @@ export default function Hero() {
       gsap.to('#d1',           { y: -5, duration: 3.8, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1.2 })
       gsap.to('#d4',           { y: 4,  duration: 3.2, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1.5 })
       gsap.to('#d9',           { y: -4, x: 3, duration: 4, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1.0 })
-      gsap.to('#canvas-left',  { y: 18,  duration: 4.5, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1 })
-      gsap.to('#canvas-right', { y: -14, duration: 5,   ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1.2 })
     }, heroRef)
 
     /* ── Mouse parallax ── */
@@ -49,8 +44,6 @@ export default function Hero() {
       gsap.to('#tp',           { x: mx * 8,   y: my * 5,   duration: 1.5, ease: 'power2.out' })
       gsap.to('#tbdr',         { x: mx * -5,  y: my * -3,  duration: 1.8, ease: 'power2.out' })
       gsap.to('#hand-layer',   { x: mx * 15,  y: my * 9,   duration: 1.2, ease: 'power2.out' })
-      gsap.to('#canvas-left',  { x: mx * -18, y: my * 12,  duration: 2.5, ease: 'power1.out' })
-      gsap.to('#canvas-right', { x: mx * 14,  y: my * -10, duration: 2.5, ease: 'power1.out' })
       gsap.to('#d3',           { x: mx * 6,               duration: 2,   ease: 'power1.out' })
       gsap.to('#d5',           { x: mx * 10,  y: my * 6,   duration: 1.8, ease: 'power1.out' })
     }
@@ -58,8 +51,6 @@ export default function Hero() {
     /* ── Scroll ── */
     const onScroll = () => {
       const p = Math.min(window.scrollY / window.innerHeight, 1)
-      gsap.to('#canvas-left',  { x: -180 * p, y: 200 * p,  rotation: -180 * p, opacity: .88 - p, duration: .1, ease: 'none' })
-      gsap.to('#canvas-right', { x: 180 * p,  y: -180 * p, rotation: 180 * p,  opacity: .82 - p, duration: .1, ease: 'none' })
       gsap.to('#tp',           { y: -p * 50, opacity: 1 - p * .7, duration: .1, ease: 'none' })
       gsap.to('#tbdr',         { y: -p * 30, opacity: 1 - p * .7, duration: .1, ease: 'none' })
       gsap.to('#hand-layer',   { y: 5 - p * 40, opacity: 1 - p * .8, duration: .1, ease: 'none' })
