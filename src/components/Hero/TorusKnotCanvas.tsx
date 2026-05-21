@@ -37,7 +37,9 @@ export default function TorusKnotCanvas({ mouseRef }: Props) {
       const l2 = new THREE.PointLight(0x5B4EAA, 2.5, 8)
       l2.position.set(-2, -1, 2)
       scene.add(l2)
-      scene.add(Object.assign(new THREE.DirectionalLight(0xffffff, 0.4), { position: { x: 0, y: 4, z: 2 } }))
+      const l3 = new THREE.DirectionalLight(0xffffff, 0.4)
+      l3.position.set(0, 4, 2)
+      scene.add(l3)
 
       const geo = new THREE.TorusKnotGeometry(1.2, 0.42, 160, 20, 2, 3)
       const mat = new THREE.MeshPhongMaterial({

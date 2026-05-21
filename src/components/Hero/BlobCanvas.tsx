@@ -38,7 +38,9 @@ export default function BlobCanvas({ mouseRef }: Props) {
       const l2 = new THREE.PointLight(0xE8604A, 2.5, 8)
       l2.position.set(2, -1, 2)
       scene.add(l2)
-      scene.add(Object.assign(new THREE.DirectionalLight(0xffffff, 0.5), { position: { x: 0, y: 3, z: 1 } }))
+      const l3 = new THREE.DirectionalLight(0xffffff, 0.5)
+      l3.position.set(0, 3, 1)
+      scene.add(l3)
 
       const geo = new THREE.IcosahedronGeometry(1.4, 4)
       const posAttr = geo.getAttribute('position') as BufferAttribute
