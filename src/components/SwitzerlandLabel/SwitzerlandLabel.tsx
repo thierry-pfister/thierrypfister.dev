@@ -114,8 +114,12 @@ export default function SwitzerlandLabel() {
       // Label pieces fade out as button fades in
       pieces.forEach(el => gsap.set(el, { opacity: 1 - t }))
 
-      // Ghost button follows path center, slides in from where label was
-      gsap.set(ghostBtn, { opacity: t, x: pt.x, y: pt.y, rotation: 0 })
+      // Ghost button follows path center — vertical (90°) at crossing and end,
+      // blends to path tangent in between, same logic as label pieces
+      const ghAng   = tangentAngle(pathEl, dist, pathLen)
+      const ghBlend = smoothstep(crossProgress, crossProgress + 0.12, progress)
+                    * smoothstep(1, 0.88, progress)
+      gsap.set(ghostBtn, { opacity: t, x: pt.x, y: pt.y, rotation: lerp(90, ghAng, ghBlend) })
 
       // Real button fades out in sync
       if (realBtn) gsap.set(realBtn, { opacity: 1 - t })
