@@ -21,7 +21,7 @@ export default function Hero() {
       gsap.from('#tp',     { opacity: 0, y: 80,  duration: 1.1, ease: 'power4.out', delay: .4 })
       gsap.from('#tbdr',   { opacity: 0, y: 60,  duration: 1,   ease: 'power4.out', delay: .54 })
       gsap.from('#hand-layer', { opacity: 0, y: -40, duration: 1.1, ease: 'back.out(1.5)', delay: .72 })
-      gsap.from('#vtxt',   { opacity: 0, x: 20,  duration: .8,  ease: 'power3.out', delay: .85 })
+      // #vtxt lifted to page level — animated by SwitzerlandLabel
       gsap.from('#bottom-row', { opacity: 0, y: 20, duration: .7, ease: 'power3.out', delay: .78 })
       /* doodles fade in staggered */
       const doodles = ['#d1','#d2','#d3','#d4','#d5','#d6','#d7','#d8','#d9']
@@ -58,7 +58,7 @@ export default function Hero() {
       gsap.to('#bred',         { y: -p * 35, opacity: .58 - p * .58, duration: .1, ease: 'none' })
       gsap.to('#blav',         { y: -p * 25, opacity: .62 - p * .62, duration: .1, ease: 'none' })
       gsap.to('[data-doodle]', { opacity: p > 0.1 ? 0 : 1, duration: .2, ease: 'none' })
-      gsap.to('#vtxt',         { opacity: 1 - p * 2, duration: .1, ease: 'none' })
+      // vtxt scroll handled by SwitzerlandLabel
     }
 
     window.addEventListener('mousemove', onMouse)
@@ -108,15 +108,6 @@ export default function Hero() {
           <span className={styles.wDeploy}>DEPLOY</span>
           <span className={styles.wRepeat}>REPEAT.</span>
         </div>
-      </div>
-
-      {/* Vertical text */}
-      <div className={styles.verticalText} id="vtxt">
-        <div className={styles.vtLine} />
-        <div className={styles.vtDot} />
-        <div className={styles.vtText}>Based in Switzerland</div>
-        <div className={styles.vtDot} />
-        <div className={styles.vtLine} />
       </div>
 
       {/* Bottom row */}
