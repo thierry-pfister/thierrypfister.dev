@@ -2,41 +2,60 @@
 
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
-import { MotionPathPlugin } from 'gsap/MotionPathPlugin'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './SwitzerlandLabel.module.css'
 
-gsap.registerPlugin(MotionPathPlugin, ScrollTrigger)
+gsap.registerPlugin(ScrollTrigger)
+
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+
+const smoothstep = (e0: number, e1: number, x: number) => {
+  const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)))
+  return t * t * (3 - 2 * t)
+}
+
+function tangentAngle(pathEl: SVGPathElement, dist: number, len: number) {
+  const p1 = pathEl.getPointAtLength(Math.max(0, dist - 1))
+  const p2 = pathEl.getPointAtLength(Math.min(len, dist + 1))
+  return Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI)
+}
 
 export default function SwitzerlandLabel() {
-  const labelRef = useRef<HTMLDivElement>(null)
+  const line1Ref = useRef<HTMLDivElement>(null)
+  const dot1Ref  = useRef<HTMLDivElement>(null)
+  const textRef  = useRef<HTMLDivElement>(null)
+  const dot2Ref  = useRef<HTMLDivElement>(null)
+  const line2Ref = useRef<HTMLDivElement>(null)
   const pathRef  = useRef<SVGPathElement>(null)
 
   useEffect(() => {
-    const el   = labelRef.current
-    const path = pathRef.current
-    if (!el || !path) return
+    const pathEl = pathRef.current
+    const text   = textRef.current
+    const all    = [line1Ref, dot1Ref, textRef, dot2Ref, line2Ref].map(r => r.current)
+    if (!pathEl || !text || all.some(e => !e)) return
+
+    const pieces = all as HTMLDivElement[]
 
     const vw = window.innerWidth
     const vh = window.innerHeight
 
-    // ── Key points in document coordinates ──────────────────────────────────
-    // Start: centre of the rotated "Based in Switzerland" element.
-    // right:18px positions the element's right edge; after rotate(90deg) the
-    // visual centre shifts left by half the element's unrotated width.
-    const startX = vw - 18 - el.offsetWidth / 2
+    // Compute label geometry first so startX can account for the label's width
+    const GAP   = 14
+    const LINE  = 40
+    const DOT   = 4
+    const textW = text.offsetWidth
+    const total = LINE + GAP + DOT + GAP + textW + GAP + DOT + GAP + LINE
+    const half  = total / 2
+
+    // Path start: right edge at vw-18, so center is half a label-width inset
+    const startX = vw - 18 - half
     const startY = vh / 2
+    const btnX   = vw * 0.49
+    const btnY   = vh - 42
+    const endX   = 44
+    const endY   = vh + 48 + vh * 0.5
 
-    // "Let's work together" button — centre of bottom row, near hero bottom
-    const btnX = vw * 0.49
-    const btnY = vh - 42
-
-    // Far-left of projects section — halfway into the section vertically
-    const endX = 44
-    const endY = vh + 48 + vh * 0.5   // hero + marquee + half projects height
-
-    // ── Control points (proportional offsets from reference geometry) ────────
-    const d = [
+    pathEl.setAttribute('d', [
       `M ${startX} ${startY}`,
       `C ${startX - vw * 0.059} ${startY + vh * 0.189},`,
       `  ${btnX   + vw * 0.146} ${btnY   - vh * 0.087},`,
@@ -44,29 +63,54 @@ export default function SwitzerlandLabel() {
       `C ${btnX - vw * 0.174} ${btnY + vh * 0.080},`,
       `  ${endX  + vw * 0.053} ${endY  - vh * 0.322},`,
       `  ${endX} ${endY}`,
-    ].join(' ')
+    ].join(' '))
 
-    path.setAttribute('d', d)
+    const pathLen = pathEl.getTotalLength()
 
-    // ── GSAP — all transforms managed here, no CSS transform on the element ──
-    gsap.set(el, { rotate: 90, xPercent: -50, yPercent: -50 })
+    const offsets = [
+      LINE / 2 - half,
+      LINE + GAP + DOT / 2 - half,
+      LINE + GAP + DOT + GAP + textW / 2 - half,
+      LINE + GAP + DOT + GAP + textW + GAP + DOT / 2 - half,
+      LINE + GAP + DOT + GAP + textW + GAP + DOT + GAP + LINE / 2 - half,
+    ]
+
+    pieces.forEach(el => gsap.set(el, { xPercent: -50, yPercent: -50 }))
+
+    const place = (progress: number) => {
+      const dist  = progress * pathLen
+      const pt    = pathEl.getPointAtLength(dist)
+      const blend = smoothstep(0, 0.12, progress) * smoothstep(1, 0.88, progress)
+
+      pieces.forEach((el, i) => {
+        const off = offsets[i] ?? 0
+        const od  = Math.max(0, Math.min(pathLen, dist + off))
+        const ePt = pathEl.getPointAtLength(od)
+        const ang = tangentAngle(pathEl, od, pathLen)
+
+        gsap.set(el, {
+          x:        lerp(pt.x,       ePt.x, blend),
+          // rigid: pt.y + off (elements stacked vertically at 90°)
+          // curved: ePt.y (each piece at its own path point)
+          y:        lerp(pt.y + off, ePt.y, blend),
+          rotation: lerp(90,         ang,   blend),
+        })
+      })
+    }
+
+    place(0)
 
     const ctx = gsap.context(() => {
-      gsap.from(el, { opacity: 0, duration: 0.8, ease: 'power3.out', delay: 0.85 })
+      pieces.forEach(el =>
+        gsap.from(el, { opacity: 0, duration: 0.8, ease: 'power3.out', delay: 0.85 })
+      )
 
-      // Animation ends when element reaches left of projects section.
-      // scroll_end ≈ endY - vh/2 keeps the endpoint centred in the viewport.
-      const scrollEnd = endY - vh / 2
-
-      gsap.to(el, {
-        motionPath: { path: '#swz-path', autoRotate: false },
-        ease: 'none',
-        scrollTrigger: {
-          trigger: document.body,
-          start: 'top top',
-          end:   `+=${scrollEnd}`,
-          scrub: 1.5,
-        },
+      ScrollTrigger.create({
+        trigger: document.body,
+        start:   'top top',
+        end:     `+=${endY - vh / 2}`,
+        scrub:   1.5,
+        onUpdate: self => place(self.progress),
       })
     })
 
@@ -83,16 +127,14 @@ export default function SwitzerlandLabel() {
           pointerEvents: 'none', overflow: 'visible', opacity: 0,
         }}
       >
-        <path ref={pathRef} id="swz-path" d="" fill="none" />
+        <path ref={pathRef} d="" fill="none" />
       </svg>
 
-      <div ref={labelRef} className={styles.label}>
-        <div className={styles.vtLine} />
-        <div className={styles.vtDot} />
-        <div className={styles.vtText}>Based in Switzerland</div>
-        <div className={styles.vtDot} />
-        <div className={styles.vtLine} />
-      </div>
+      <div ref={line1Ref} className={styles.vtLine} />
+      <div ref={dot1Ref}  className={styles.vtDot} />
+      <div ref={textRef}  className={styles.vtText}>Based in Switzerland</div>
+      <div ref={dot2Ref}  className={styles.vtDot} />
+      <div ref={line2Ref} className={styles.vtLine} />
     </>
   )
 }
