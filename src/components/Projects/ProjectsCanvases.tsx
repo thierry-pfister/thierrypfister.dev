@@ -78,11 +78,17 @@ export default function ProjectsCarousel() {
       group.add(cylinder)
       scene.add(group)
 
+      // cos(t * numCards) = 1 when a card faces front, -1 halfway between cards
+      const slowSpeed = 0.001
+      const fastSpeed = 0.022
+
       let animId: number
       let t = 0
       const tick = () => {
         animId = requestAnimationFrame(tick)
-        t -= 0.008
+        const centeredness = (Math.cos(t * numCards) + 1) / 2   // 1 at card center, 0 at midpoint
+        const speed = slowSpeed + (fastSpeed - slowSpeed) * Math.pow(1 - centeredness, 2)
+        t -= speed
         cylinder.rotation.y = t
         renderer.render(scene, cam)
       }
