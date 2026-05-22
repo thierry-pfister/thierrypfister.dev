@@ -1,9 +1,15 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import type { Project } from '@/types/project'
 import styles from './Projects.module.css'
 
-export default function ProjectsCarousel() {
+interface Props {
+  projects: readonly Project[]
+  onActiveChange: (index: number) => void
+}
+
+export default function ProjectsCarousel({ projects, onActiveChange }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -23,7 +29,6 @@ export default function ProjectsCarousel() {
       renderer.setSize(w, h)
 
       const scene = new THREE.Scene()
-      // Telephoto FOV: front card ~80vw, adjacent cards just barely off-screen
       const cam = new THREE.PerspectiveCamera(20, w / h, 0.1, 200)
       cam.position.set(0, 0, 18)
 
@@ -33,6 +38,9 @@ export default function ProjectsCarousel() {
       scene.add(light)
 
       const R = 6
+      const numCards = projects.length
+      const cardArc = (60 * Math.PI) / 180
+      const cardSpacing = (2 * Math.PI) / numCards
 
       const makeGradient = (c1: string, c2: string) => {
         const cv = document.createElement('canvas')
@@ -46,22 +54,18 @@ export default function ProjectsCarousel() {
         return new THREE.CanvasTexture(cv)
       }
 
-      const numCards = 5
-      const cardArc = (60 * Math.PI) / 180
-      const cardDefs = [
-        makeGradient('#6366F1', '#8B5CF6'),
-        makeGradient('#F59E0B', '#EF4444'),
-        makeGradient('#10B981', '#06B6D4'),
-        makeGradient('#7C3AED', '#EC4899'),
-        makeGradient('#3B82F6', '#14B8A6'),
-      ]
-      const cardMats = cardDefs.map(tex => new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }))
+      const cardMats = projects.map(p =>
+        new THREE.MeshBasicMaterial({
+          map: makeGradient(p.gradient[0], p.gradient[1]),
+          side: THREE.DoubleSide,
+        })
+      )
       const cardGeos: import('three').CylinderGeometry[] = []
       const cards = Array.from({ length: numCards }, (_, i) => {
         const geo = new THREE.CylinderGeometry(
           R, R, 3.2,
           64, 1, true,
-          -(cardArc / 2) + i * (2 * Math.PI) / numCards,
+          -(cardArc / 2) + i * cardSpacing,
           cardArc,
         )
         cardGeos.push(geo)
@@ -84,12 +88,22 @@ export default function ProjectsCarousel() {
 
       let animId: number
       let t = 0
+      let lastActive = -1
+
       const tick = () => {
         animId = requestAnimationFrame(tick)
-        const centeredness = (Math.cos(t * numCards) + 1) / 2   // 1 at card center, 0 at midpoint
+        const centeredness = (Math.cos(t * numCards) + 1) / 2
         const speed = slowSpeed + (fastSpeed - slowSpeed) * Math.pow(1 - centeredness, 2)
         t -= speed
         cylinder.rotation.y = t
+
+        // Emit active card index only when it changes
+        const active = Math.round(-t / cardSpacing) % numCards
+        if (active !== lastActive) {
+          lastActive = active
+          onActiveChange(active)
+        }
+
         renderer.render(scene, cam)
       }
       tick()
@@ -103,7 +117,7 @@ export default function ProjectsCarousel() {
     })
 
     return () => { cancelled = true; dispose?.() }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return <canvas ref={canvasRef} className={styles.canvas} />
 }

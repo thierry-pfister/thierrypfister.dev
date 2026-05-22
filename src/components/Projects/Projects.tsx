@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { projects } from '@/data/projects'
 import styles from './Projects.module.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -12,6 +13,11 @@ const ProjectsCanvases = dynamic(() => import('./ProjectsCanvases'), { ssr: fals
 
 export default function Projects() {
   const sectionRef = useRef<HTMLElement>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  const handleActiveChange = useCallback((index: number) => {
+    setActiveIndex(index)
+  }, [])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -31,16 +37,17 @@ export default function Projects() {
     return () => ctx.revert()
   }, [])
 
+  const activeProject = projects[activeIndex]
+
   return (
     <section ref={sectionRef} className={styles.section}>
 
-      {/* Full-bleed carousel canvas */}
-      <ProjectsCanvases />
+      <ProjectsCanvases projects={projects} onActiveChange={handleActiveChange} />
 
-      {/* Dark gradient so header text is readable over the 3D */}
       <div className={styles.topGradient} />
+      <div className={styles.bottomGradient} />
 
-      {/* Header overlay */}
+      {/* Header — top-left */}
       <div className={styles.header}>
         <span className={styles.label} data-proj-header>Selected projects</span>
         <h2 className={styles.title} data-proj-header>
@@ -48,6 +55,21 @@ export default function Projects() {
         </h2>
         <span className={styles.hand} data-proj-header>some of my favourite builds</span>
       </div>
+
+      {/* Active project — bottom-left, remounts on change to trigger fade-in */}
+      {activeProject && (
+        <div key={activeIndex} className={styles.activeProject}>
+          <span className={styles.activeCount}>
+            {String(activeIndex + 1).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}
+          </span>
+          <h3 className={styles.activeTitle}>{activeProject.title}</h3>
+          <div className={styles.activeTags}>
+            {activeProject.tags.map(tag => (
+              <span key={tag} className={styles.activeTag}>{tag}</span>
+            ))}
+          </div>
+        </div>
+      )}
 
     </section>
   )

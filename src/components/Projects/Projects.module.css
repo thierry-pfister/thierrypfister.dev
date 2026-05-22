@@ -69,6 +69,69 @@
   margin-top: 4px;
 }
 
+/* ── Bottom gradient — readability for active title ── */
+.bottomGradient {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 240px;
+  background: linear-gradient(to top, rgba(10,10,10,0.82) 0%, transparent 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── Active project info — bottom-left ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.activeProject {
+  position: absolute;
+  bottom: 0; left: 0;
+  z-index: 2;
+  padding: 48px 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: fadeUp 0.3s var(--ease-out) forwards;
+}
+
+.activeCount {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.activeTitle {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(20px, 2.4vw, 28px);
+  letter-spacing: -0.01em;
+  color: var(--tx);
+  line-height: 1;
+}
+
+.activeTags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.activeTag {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple-p);
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+
 /* ── Tablet ── */
 @media (max-width: 900px) {
   .header { padding: 36px 24px; }
