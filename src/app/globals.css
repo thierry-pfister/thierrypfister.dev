@@ -7,13 +7,32 @@
 }
 
 :root {
-  /* ── Surfaces ── */
+  /* ── Light surfaces ── */
   --cream:    #F4F0E8;
   --cream2:   #EDE8DF;
 
+  /* ── Dark surfaces ── */
+  --bg:       #0A0A0A;
+  --bg2:      #080808;
+  --bg3:      #0E0E0E;
+  --bg4:      #141414;
+  --border:      rgba(255,255,255,0.055);
+  --border-sub:  rgba(255,255,255,0.03);
+
+  /* ── Dark text ── */
+  --tx:       #EAE8E2;
+  --ts:       #2A2826;
+  --tm:       #1A1816;
+
   /* ── Accents ── */
+  --gold:     #E8C547;
+  --gold-l:   #F0D060;
+  --gold-d:   #C0A020;
   --butter:   #F0D97A;
   --butter-d: #C8A830;
+  --purple:   #6366F1;
+  --purple-l: #818CF8;
+  --purple-p: #A5B4FC;
   --indigo:   #6366F1;
   --indigo-l: #818CF8;
   --indigo-p: #A5B4FC;
@@ -26,7 +45,7 @@
   --sage-d:   #1A4A18;
   --sage-dot: #2A6A24;
 
-  /* ── Text ── */
+  /* ── Light text ── */
   --ink:      #14120F;
   --ink2:     #2A2826;
   --ink3:     #6A6460;
