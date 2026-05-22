@@ -4,14 +4,18 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { projects } from '@/data/projects'
+import type { Project } from '@/types/project'
 import styles from './Projects.module.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const ProjectsCanvases = dynamic(() => import('./ProjectsCanvases'), { ssr: false })
 
-export default function Projects() {
+interface Props {
+  projects: readonly Project[]
+}
+
+export default function Projects({ projects }: Props) {
   const sectionRef = useRef<HTMLElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
 
@@ -70,11 +74,11 @@ export default function Projects() {
           </span>
           <h3 className={styles.activeTitle}>{activeProject.title}</h3>
           <div className={styles.activeTags}>
-            {activeProject.tags.map(tag => (
+            {activeProject.techStack.map(tag => (
               <span key={tag} className={styles.activeTag}>{tag}</span>
             ))}
           </div>
-          <p className={styles.activeDesc}>{activeProject.description}</p>
+          <p className={styles.activeDesc}>{activeProject.summary}</p>
         </div>
       )}
 

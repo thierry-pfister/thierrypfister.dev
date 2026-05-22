@@ -42,6 +42,14 @@ export default function ProjectsCarousel({ projects, onActiveChange }: Props) {
       const cardArc = (60 * Math.PI) / 180
       const cardSpacing = (2 * Math.PI) / numCards
 
+      const GRADIENTS: [string, string][] = [
+        ['#6366F1', '#8B5CF6'],
+        ['#F59E0B', '#EF4444'],
+        ['#10B981', '#06B6D4'],
+        ['#7C3AED', '#EC4899'],
+        ['#3B82F6', '#14B8A6'],
+      ]
+
       const makeGradient = (c1: string, c2: string) => {
         const cv = document.createElement('canvas')
         cv.width = 512; cv.height = 288
@@ -54,12 +62,13 @@ export default function ProjectsCarousel({ projects, onActiveChange }: Props) {
         return new THREE.CanvasTexture(cv)
       }
 
-      const cardMats = projects.map(p =>
-        new THREE.MeshBasicMaterial({
-          map: makeGradient(p.gradient[0], p.gradient[1]),
+      const cardMats = projects.map((_, i) => {
+        const [c1, c2] = GRADIENTS[i % GRADIENTS.length]!
+        return new THREE.MeshBasicMaterial({
+          map: makeGradient(c1, c2),
           side: THREE.DoubleSide,
         })
-      )
+      })
       const cardGeos: import('three').CylinderGeometry[] = []
       const cards = Array.from({ length: numCards }, (_, i) => {
         const geo = new THREE.CylinderGeometry(
