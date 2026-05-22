@@ -1,9 +1,12 @@
 const ITEMS = [
-  'BUILD', 'DEPLOY', 'REPEAT',
-  'thierrypfister.dev',
-  'React', 'Next.js', 'TypeScript',
-  'Three.js', 'GSAP', 'F#',
-  'PostgreSQL', 'Docker', 'ASP.NET Core',
+  'Available for Freelance',
+  'Based in Switzerland',
+  'Full-Stack Developer',
+  'Open Source',
+  'Fast Delivery',
+  'Clean Code',
+  'Always Building',
+  'Open to Collaboration',
 ]
 
 import styles from './Marquee.module.css'
