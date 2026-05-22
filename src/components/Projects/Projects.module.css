@@ -3,7 +3,7 @@
   position: relative;
   width: 100%;
   height: 100vh;
-  background: var(--bg);
+  background: var(--cream);
   overflow: hidden;
 }
 
@@ -16,22 +16,75 @@
   pointer-events: none;
 }
 
-/* ── Top gradient — readability over 3D ── */
+/* ── Background blobs ── */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.blobLav {
+  composes: blob;
+  width: 52vw; height: 52vw;
+  background: radial-gradient(circle, rgba(184,168,232,.42) 0%, rgba(139,126,212,.24) 52%, transparent 78%);
+  filter: blur(72px);
+  top: -18%; left: -8%;
+}
+
+.blobBut {
+  composes: blob;
+  width: 44vw; height: 44vw;
+  background: radial-gradient(circle, rgba(240,217,122,.38) 0%, rgba(242,184,154,.22) 55%, transparent 80%);
+  filter: blur(60px);
+  bottom: -10%; right: -6%;
+}
+
+.blobCoral {
+  composes: blob;
+  width: 32vw; height: 32vw;
+  background: radial-gradient(circle, rgba(232,96,74,.28) 0%, rgba(240,120,80,.16) 50%, transparent 76%);
+  filter: blur(64px);
+  top: 10%; right: 5%;
+}
+
+/* ── Editorial grid — ties visually to hero ── */
+.grid {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.045) 1px, transparent 1px);
+  background-size: 100% 50%, 25% 100%;
+}
+
+/* ── Cream vignettes — header and active info readability ── */
 .topGradient {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 280px;
-  background: linear-gradient(to bottom, rgba(10,10,10,0.75) 0%, transparent 100%);
-  z-index: 1;
+  background: linear-gradient(to bottom, var(--cream) 0%, transparent 100%);
+  z-index: 3;
   pointer-events: none;
 }
 
-/* ── Header overlay ── */
+.bottomGradient {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 320px;
+  background: linear-gradient(to top, var(--cream) 0%, transparent 100%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ── Header overlay — top-left ── */
 .header {
   position: absolute;
   top: 0; left: 0;
-  z-index: 2;
-  padding: 48px 44px;
+  z-index: 4;
+  padding: 80px 44px 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -42,7 +95,7 @@
   font-size: 10px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--purple-l);
+  color: var(--indigo);
 }
 
 .title {
@@ -51,11 +104,11 @@
   font-size: clamp(36px, 5vw, 56px);
   line-height: 0.9;
   letter-spacing: -0.01em;
-  color: var(--tx);
+  color: var(--ink);
 }
 
 .underscore {
-  color: var(--gold);
+  color: var(--butter-d);
   font-style: normal;
 }
 
@@ -63,20 +116,10 @@
   font-family: var(--font-hand);
   font-weight: 600;
   font-size: 20px;
-  color: rgba(234, 232, 226, 0.55);
+  color: var(--lav-d);
   transform: rotate(-1.2deg);
   display: inline-block;
   margin-top: 4px;
-}
-
-/* ── Bottom gradient — readability for active title ── */
-.bottomGradient {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 320px;
-  background: linear-gradient(to top, rgba(10,10,10,0.85) 0%, transparent 100%);
-  z-index: 1;
-  pointer-events: none;
 }
 
 /* ── Active project info — bottom-left ── */
@@ -88,7 +131,7 @@
 .activeProject {
   position: absolute;
   bottom: 0; left: 0;
-  z-index: 2;
+  z-index: 4;
   padding: 0 44px 52px;
   display: flex;
   flex-direction: column;
@@ -101,7 +144,7 @@
   font-size: 9px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--butter-d);
 }
 
 .activeTitle {
@@ -109,7 +152,7 @@
   font-weight: 900;
   font-size: clamp(20px, 2.4vw, 28px);
   letter-spacing: -0.01em;
-  color: var(--tx);
+  color: var(--ink);
   line-height: 1;
 }
 
@@ -125,9 +168,9 @@
   font-size: 8.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--purple-p);
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: var(--indigo);
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.18);
   border-radius: 4px;
   padding: 3px 8px;
 }
@@ -137,19 +180,21 @@
   font-size: 13px;
   font-weight: 300;
   line-height: 1.6;
-  color: rgba(234, 232, 226, 0.45);
+  color: var(--ink3);
   max-width: 320px;
   margin-top: 4px;
 }
 
 /* ── Tablet ── */
 @media (max-width: 900px) {
-  .header { padding: 36px 24px; }
+  .header { padding: 80px 24px 0; }
+  .activeProject { padding: 0 24px 40px; }
 }
 
 /* ── Phone ── */
 @media (max-width: 640px) {
-  .header { padding: 28px 16px; }
+  .header { padding: 76px 16px 0; }
   .title  { font-size: clamp(28px, 8vw, 42px); }
   .hand   { font-size: 16px; }
+  .activeProject { padding: 0 16px 32px; }
 }

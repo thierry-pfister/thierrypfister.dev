@@ -42,8 +42,14 @@ export default function Projects() {
   return (
     <section ref={sectionRef} className={styles.section}>
 
+      {/* Background blobs — same language as hero, more muted */}
+      <div className={styles.blobLav} />
+      <div className={styles.blobBut} />
+      <div className={styles.blobCoral} />
+
       <ProjectsCanvases projects={projects} onActiveChange={handleActiveChange} />
 
+      <div className={styles.grid} />
       <div className={styles.topGradient} />
       <div className={styles.bottomGradient} />
 
