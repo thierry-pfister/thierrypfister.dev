@@ -68,6 +68,7 @@ export default function Projects() {
               <span key={tag} className={styles.activeTag}>{tag}</span>
             ))}
           </div>
+          <p className={styles.activeDesc}>{activeProject.description}</p>
         </div>
       )}
 
