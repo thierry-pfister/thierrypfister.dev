@@ -7,6 +7,6 @@ export async function fetchProjects(): Promise<Project[]> {
   if (!res.ok) throw new Error(`pfstr-core /api/projects → ${res.status}`)
   const data: Project[] = await res.json()
   return data
-    .filter(p => p.status === 'Active')
+    .filter(p => p.status !== 'Draft' && p.status !== 'Archived')
     .sort((a, b) => a.displayOrder - b.displayOrder)
 }

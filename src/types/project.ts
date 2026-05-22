@@ -9,7 +9,7 @@ export type Project = {
   slug: string
   summary: string
   content: string | null
-  status: 'Active' | 'Archived'
+  status: 'Draft' | 'Published' | 'Active' | 'Archived'
   techStack: string[]
   links: ProjectLink[]
   displayOrder: number
