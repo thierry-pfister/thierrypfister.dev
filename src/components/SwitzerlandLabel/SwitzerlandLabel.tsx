@@ -21,25 +21,27 @@ function tangentAngle(pathEl: SVGPathElement, dist: number, len: number) {
 }
 
 export default function SwitzerlandLabel() {
-  const line1Ref = useRef<HTMLDivElement>(null)
-  const dot1Ref  = useRef<HTMLDivElement>(null)
-  const textRef  = useRef<HTMLDivElement>(null)
-  const dot2Ref  = useRef<HTMLDivElement>(null)
-  const line2Ref = useRef<HTMLDivElement>(null)
-  const pathRef  = useRef<SVGPathElement>(null)
+  const line1Ref   = useRef<HTMLDivElement>(null)
+  const dot1Ref    = useRef<HTMLDivElement>(null)
+  const textRef    = useRef<HTMLDivElement>(null)
+  const dot2Ref    = useRef<HTMLDivElement>(null)
+  const line2Ref   = useRef<HTMLDivElement>(null)
+  const ghostBtnRef = useRef<HTMLButtonElement>(null)
+  const pathRef    = useRef<SVGPathElement>(null)
 
   useEffect(() => {
-    const pathEl = pathRef.current
-    const text   = textRef.current
-    const all    = [line1Ref, dot1Ref, textRef, dot2Ref, line2Ref].map(r => r.current)
-    if (!pathEl || !text || all.some(e => !e)) return
+    const pathEl   = pathRef.current
+    const text     = textRef.current
+    const ghostBtn = ghostBtnRef.current
+    const all      = [line1Ref, dot1Ref, textRef, dot2Ref, line2Ref].map(r => r.current)
+    if (!pathEl || !text || !ghostBtn || all.some(e => !e)) return
 
-    const pieces = all as HTMLDivElement[]
+    const pieces  = all as HTMLDivElement[]
+    const realBtn = document.getElementById('btn-work') as HTMLElement | null
 
     const vw = window.innerWidth
     const vh = window.innerHeight
 
-    // Compute label geometry first so startX can account for the label's width
     const GAP   = 14
     const LINE  = 40
     const DOT   = 4
@@ -47,7 +49,6 @@ export default function SwitzerlandLabel() {
     const total = LINE + GAP + DOT + GAP + textW + GAP + DOT + GAP + LINE
     const half  = total / 2
 
-    // Path start: right edge at vw-18, so center is half a label-width inset
     const startX = vw - 18 - half
     const startY = vh / 2
     const btnX   = vw * 0.49
@@ -76,12 +77,24 @@ export default function SwitzerlandLabel() {
     ]
 
     pieces.forEach(el => gsap.set(el, { xPercent: -50, yPercent: -50 }))
+    gsap.set(ghostBtn, { xPercent: -50, yPercent: -50, opacity: 0 })
+
+    // Find progress at which path center reaches the button (y = btnY)
+    let lo = 0, hi = 0.75
+    for (let i = 0; i < 24; i++) {
+      const mid = (lo + hi) / 2
+      if (pathEl.getPointAtLength(mid * pathLen).y < btnY) lo = mid
+      else hi = mid
+    }
+    const crossProgress = (lo + hi) / 2
+    const FADE = 0.05
 
     const place = (progress: number) => {
       const dist  = progress * pathLen
       const pt    = pathEl.getPointAtLength(dist)
       const blend = smoothstep(0, 0.12, progress) * smoothstep(1, 0.88, progress)
 
+      // Label pieces → path-following
       pieces.forEach((el, i) => {
         const off = offsets[i] ?? 0
         const od  = Math.max(0, Math.min(pathLen, dist + off))
@@ -90,12 +103,22 @@ export default function SwitzerlandLabel() {
 
         gsap.set(el, {
           x:        lerp(pt.x,       ePt.x, blend),
-          // rigid: pt.y + off (elements stacked vertically at 90°)
-          // curved: ePt.y (each piece at its own path point)
           y:        lerp(pt.y + off, ePt.y, blend),
           rotation: lerp(90,         ang,   blend),
         })
       })
+
+      // Crossfade between label and button
+      const t = smoothstep(crossProgress - FADE, crossProgress + FADE, progress)
+
+      // Label pieces fade out as button fades in
+      pieces.forEach(el => gsap.set(el, { opacity: 1 - t }))
+
+      // Ghost button follows path center, slides in from where label was
+      gsap.set(ghostBtn, { opacity: t, x: pt.x, y: pt.y, rotation: 0 })
+
+      // Real button fades out in sync
+      if (realBtn) gsap.set(realBtn, { opacity: 1 - t })
     }
 
     place(0)
@@ -114,7 +137,10 @@ export default function SwitzerlandLabel() {
       })
     })
 
-    return () => ctx.revert()
+    return () => {
+      ctx.revert()
+      if (realBtn) gsap.set(realBtn, { opacity: 1 })
+    }
   }, [])
 
   return (
@@ -135,6 +161,13 @@ export default function SwitzerlandLabel() {
       <div ref={textRef}  className={styles.vtText}>Based in Switzerland</div>
       <div ref={dot2Ref}  className={styles.vtDot} />
       <div ref={line2Ref} className={styles.vtLine} />
+
+      <button ref={ghostBtnRef} className={styles.ghostBtn} aria-hidden tabIndex={-1}>
+        Let&apos;s work together
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M1 11L11 1M11 1H4M11 1V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      </button>
     </>
   )
 }
