@@ -1,0 +1,10 @@
+.wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .wrap { display: none; }
+}
