@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
-import styles from './DiagonalRope.module.css'
 
 // Strand wraps around a spine using a consistent tangent-space frame
 class StrandCurve extends THREE.Curve<THREE.Vector3> {
@@ -80,7 +79,7 @@ export default function DiagonalRope() {
       metalness:  0.55,
       roughness:  0.45,
       transparent: true,
-      opacity:    0.28,
+      opacity:    0.42,
       side:       THREE.DoubleSide,
     })
 
@@ -146,5 +145,5 @@ export default function DiagonalRope() {
     }
   }, [])
 
-  return <div ref={mountRef} className={styles.wrap} />
+  return <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
 }

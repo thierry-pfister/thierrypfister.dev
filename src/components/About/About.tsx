@@ -6,7 +6,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './About.module.css'
 
-const AboutParticles = dynamic(() => import('./AboutParticles'), { ssr: false })
+const AboutRope = dynamic(() => import('../DiagonalRope/DiagonalRope'), { ssr: false })
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -41,8 +41,8 @@ export default function About() {
       <div className={styles.blobLav} />
       <div className={styles.grid} />
 
-      <div className={styles.particlesWrap}>
-        <AboutParticles />
+      <div className={styles.ropeWrap}>
+        <AboutRope />
       </div>
 
       <div className={styles.inner}>

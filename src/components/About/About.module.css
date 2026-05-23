@@ -132,8 +132,8 @@
   50%       { opacity: 0.5; transform: scale(0.75); }
 }
 
-/* ── Particle field ── */
-.particlesWrap {
+/* ── Rope canvas ── */
+.ropeWrap {
   position: absolute;
   inset: 0;
   z-index: 3;
@@ -142,7 +142,7 @@
 
 /* ── Mobile ── */
 @media (max-width: 640px) {
-  .particlesWrap { opacity: 0.5; }
+  .ropeWrap { opacity: 0.4; }
 }
 
 @media (max-width: 640px) {
