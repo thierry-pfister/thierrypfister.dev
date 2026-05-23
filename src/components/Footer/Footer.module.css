@@ -2,7 +2,7 @@
 .footer {
   position: relative;
   width: 100%;
-  background: #DDA89A;
+  background: var(--cream2);
   border-top: 1px solid rgba(20, 18, 15, 0.08);
   overflow: hidden;
 }
@@ -58,14 +58,16 @@
   50%       { opacity: 0.5; transform: scale(0.7); }
 }
 
-/* ── Brand wordmark ── */
+/* ── Brand wordmark (outline-only, editorial) ── */
 .brand {
   font-family: var(--font-display);
   font-weight: 900;
   font-size: clamp(96px, 18vw, 280px);
   line-height: 0.82;
   letter-spacing: -0.04em;
-  color: var(--ink);
+  color: transparent;
+  -webkit-text-stroke: 2.5px var(--ink);
+  text-stroke: 2.5px var(--ink);
   margin: 0 0 10px 0;
   transition: opacity 0.4s;
 }
@@ -73,6 +75,8 @@
 .brand em {
   color: var(--gold);
   font-style: normal;
+  -webkit-text-stroke: 0;
+  text-stroke: 0;
 }
 
 /* ── Tagline ── */
