@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { gsap } from 'gsap'
 
-const AboutTorusKnot = dynamic(() => import('./AboutTorusKnot'), { ssr: false })
+const AboutPipeline = dynamic(() => import('./AboutPipeline'), { ssr: false })
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './About.module.css'
 
@@ -42,7 +42,7 @@ export default function About() {
       <div className={styles.grid} />
 
       <div className={styles.knotWrap}>
-        <AboutTorusKnot />
+        <AboutPipeline />
       </div>
 
       <div className={styles.inner}>
