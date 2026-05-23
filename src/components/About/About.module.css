@@ -132,20 +132,17 @@
   50%       { opacity: 0.5; transform: scale(0.75); }
 }
 
-/* ── Helix canvas ── */
-.gearsWrap {
+/* ── Particle field ── */
+.particlesWrap {
   position: absolute;
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 560px;
-  height: 680px;
-  z-index: 5;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
 }
 
 /* ── Mobile ── */
-@media (max-width: 900px) {
-  .gearsWrap { display: none; }
+@media (max-width: 640px) {
+  .particlesWrap { opacity: 0.5; }
 }
 
 @media (max-width: 640px) {
