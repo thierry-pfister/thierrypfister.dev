@@ -1,388 +1,204 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import * as THREE from 'three'
+import { useEffect, useState } from 'react'
+import styles from './CICDPipeline3D.module.css'
 
-// ─── Palette ──────────────────────────────────────────────────────────
-const C_NAVY    = 0x0a1828
-const C_NAVY2   = 0x0d2238
-const C_TEAL    = 0x00d4aa
-const C_CYAN    = 0x00fff0
-const C_AMBIENT = 0x0a1f30
-
-type IconType = 'box' | 'hex' | 'ring' | 'cone' | 'orb'
-
-const STAGES: { label: string; pos: [number, number, number]; icon: IconType }[] = [
-  { label: 'COMMIT', pos: [-3.6, 0, -0.4], icon: 'box'  },
-  { label: 'BUILD',  pos: [-1.8, 0,  0.4], icon: 'hex'  },
-  { label: 'TEST',   pos: [ 0.0, 0, -0.4], icon: 'ring' },
-  { label: 'DEPLOY', pos: [ 1.8, 0,  0.4], icon: 'cone' },
-  { label: 'LIVE',   pos: [ 3.6, 0, -0.4], icon: 'orb'  },
+const STAGES = [
+  { id: 'commit', label: 'COMMIT', running: 'pushing to main…',     done: 'committed'  },
+  { id: 'build',  label: 'BUILD',  running: 'compiling assets…',    done: 'built'      },
+  { id: 'test',   label: 'TEST',   running: 'running test suite…',  done: 'passed'     },
+  { id: 'deploy', label: 'DEPLOY', running: 'shipping to edge…',    done: 'deployed'   },
+  { id: 'live',   label: 'LIVE',   running: 'serving requests',     done: 'live'       },
 ]
 
-function buildIcon(
-  type: IconType,
-  bodyMat: THREE.MeshStandardMaterial,
-  glowMat: THREE.MeshStandardMaterial,
-  geos: THREE.BufferGeometry[],
-): THREE.Mesh {
-  let geo: THREE.BufferGeometry
-  let mat = bodyMat
-  let tiltX = 0
+// Coordinates inside viewBox 500 × 400
+const NODE_Y      = 220
+const NODE_R      = 20
+const NODE_X      = [70, 165, 250, 335, 430]
+const PATH_LEN    = 95  // distance between adjacent node edges
 
-  switch (type) {
-    case 'box':
-      geo = new THREE.BoxGeometry(0.2, 0.2, 0.2)
-      break
-    case 'hex':
-      geo = new THREE.CylinderGeometry(0.14, 0.14, 0.2, 6)
-      break
-    case 'ring':
-      geo = new THREE.TorusGeometry(0.13, 0.03, 12, 28)
-      tiltX = Math.PI / 2
-      break
-    case 'cone':
-      geo = new THREE.ConeGeometry(0.14, 0.24, 6)
-      break
-    case 'orb':
-      geo = new THREE.SphereGeometry(0.14, 24, 24)
-      mat = glowMat
-      break
-  }
-
-  geos.push(geo)
-  const mesh = new THREE.Mesh(geo, mat)
-  if (tiltX) mesh.rotation.x = tiltX
-  return mesh
-}
+// Timings (ms)
+const POP_MS      = 360
+const DRAW_MS     = 1100
+const HOLD_END_MS = 2400
+const RESET_MS    = 550
 
 export default function CICDPipeline3D() {
-  const wrapRef  = useRef<HTMLDivElement>(null)
-  const mountRef = useRef<HTMLDivElement>(null)
-  const l0Ref    = useRef<HTMLDivElement>(null)
-  const l1Ref    = useRef<HTMLDivElement>(null)
-  const l2Ref    = useRef<HTMLDivElement>(null)
-  const l3Ref    = useRef<HTMLDivElement>(null)
-  const l4Ref    = useRef<HTMLDivElement>(null)
+  const [shown, setShown] = useState(0) // nodes visible (0..5)
+  const [drawn, setDrawn] = useState(0) // path segments drawn (0..4)
 
   useEffect(() => {
-    const wrap = wrapRef.current
-    const el   = mountRef.current
-    const labelEls = [l0Ref.current, l1Ref.current, l2Ref.current, l3Ref.current, l4Ref.current]
-    if (!wrap || !el || labelEls.some(l => !l)) return
-    const labels = labelEls as HTMLDivElement[]
+    let stopped = false
+    const ids: ReturnType<typeof setTimeout>[] = []
 
-    let w = el.clientWidth
-    let h = el.clientHeight
-
-    // ── Renderer ───────────────────────────────────────────
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    renderer.setSize(w, h)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    renderer.setClearColor(0x000000, 0)
-    el.appendChild(renderer.domElement)
-
-    // ── Orthographic isometric camera ──────────────────────
-    const frustum = 3.4
-    const aspect  = w / h
-    const camera  = new THREE.OrthographicCamera(
-      -frustum * aspect,  frustum * aspect,
-       frustum,          -frustum,
-      0.1, 100,
-    )
-    camera.position.set(10, 7, 10)
-    camera.lookAt(0, 0, 0)
-
-    const scene = new THREE.Scene()
-
-    // ── Lights ─────────────────────────────────────────────
-    scene.add(new THREE.AmbientLight(C_AMBIENT, 2.0))
-
-    const key = new THREE.DirectionalLight(0x00ffd0, 1.4)
-    key.position.set(5, 8, 5)
-    scene.add(key)
-
-    const rim = new THREE.DirectionalLight(0x0044aa, 0.7)
-    rim.position.set(-6, -2, -4)
-    scene.add(rim)
-
-    // ── Disposables ────────────────────────────────────────
-    const geos: THREE.BufferGeometry[] = []
-    const mats: THREE.Material[]       = []
-
-    // ── Shared materials ───────────────────────────────────
-    const platformMat = new THREE.MeshStandardMaterial({
-      color: C_NAVY2, metalness: 0.85, roughness: 0.2,
-      emissive: C_NAVY, emissiveIntensity: 0.35,
-    })
-    mats.push(platformMat)
-
-    const iconMat = new THREE.MeshStandardMaterial({
-      color: C_NAVY2, metalness: 0.85, roughness: 0.2,
-      emissive: C_TEAL, emissiveIntensity: 0.18,
-    })
-    mats.push(iconMat)
-
-    const orbGlowMat = new THREE.MeshStandardMaterial({
-      color: C_TEAL, metalness: 0.3, roughness: 0.4,
-      emissive: C_CYAN, emissiveIntensity: 2.2,
-    })
-    mats.push(orbGlowMat)
-
-    const accentMat = new THREE.MeshBasicMaterial({ color: C_TEAL })
-    mats.push(accentMat)
-
-    // ── Root group ─────────────────────────────────────────
-    const root = new THREE.Group()
-    scene.add(root)
-
-    const platformGroups: THREE.Group[] = []
-    const iconMeshes:     THREE.Mesh[]  = []
-
-    // ── Build platforms ────────────────────────────────────
-    STAGES.forEach(stage => {
-      const pg = new THREE.Group()
-
-      // Platform body — hexagonal disc
-      const pGeo = new THREE.CylinderGeometry(0.44, 0.44, 0.08, 6)
-      geos.push(pGeo)
-      pg.add(new THREE.Mesh(pGeo, platformMat))
-
-      // Top accent ring
-      const ringGeo = new THREE.TorusGeometry(0.44, 0.011, 8, 24)
-      geos.push(ringGeo)
-      const ring = new THREE.Mesh(ringGeo, accentMat)
-      ring.rotation.x = Math.PI / 2
-      ring.position.y = 0.04
-      pg.add(ring)
-
-      // Icon on top
-      const icon = buildIcon(stage.icon, iconMat, orbGlowMat, geos)
-      icon.position.y = 0.24
-      pg.add(icon)
-      iconMeshes.push(icon)
-
-      // Position
-      pg.position.set(stage.pos[0], stage.pos[1], stage.pos[2])
-
-      // Per-platform uplight (small range)
-      const uplight = new THREE.PointLight(C_TEAL, 0.7, 1.4)
-      uplight.position.set(0, 0.5, 0)
-      pg.add(uplight)
-
-      root.add(pg)
-      platformGroups.push(pg)
-    })
-
-    // ── Tubes between platforms ────────────────────────────
-    const curves: THREE.CatmullRomCurve3[] = []
-    const tubeMats: THREE.MeshStandardMaterial[] = []
-
-    for (let i = 0; i < STAGES.length - 1; i++) {
-      const sa = STAGES[i]!
-      const sb = STAGES[i + 1]!
-      const a = new THREE.Vector3(sa.pos[0], sa.pos[1] + 0.22, sa.pos[2])
-      const b = new THREE.Vector3(sb.pos[0], sb.pos[1] + 0.22, sb.pos[2])
-      const mid = new THREE.Vector3().lerpVectors(a, b, 0.5)
-      mid.y += 0.7
-
-      const curve = new THREE.CatmullRomCurve3([a, mid, b])
-      curves.push(curve)
-
-      // Inner emissive tube
-      const innerGeo = new THREE.TubeGeometry(curve, 60, 0.022, 6, false)
-      geos.push(innerGeo)
-      const innerMat = new THREE.MeshStandardMaterial({
-        color: C_TEAL, emissive: C_TEAL, emissiveIntensity: 2.0,
-        metalness: 0, roughness: 1,
-      })
-      mats.push(innerMat)
-      tubeMats.push(innerMat)
-      root.add(new THREE.Mesh(innerGeo, innerMat))
-
-      // Outer halo
-      const outerGeo = new THREE.TubeGeometry(curve, 60, 0.06, 6, false)
-      geos.push(outerGeo)
-      const outerMat = new THREE.MeshBasicMaterial({
-        color: C_CYAN, transparent: true, opacity: 0.09,
-        blending: THREE.AdditiveBlending, depthWrite: false,
-      })
-      mats.push(outerMat)
-      root.add(new THREE.Mesh(outerGeo, outerMat))
+    const at = (ms: number, fn: () => void) => {
+      ids.push(setTimeout(() => { if (!stopped) fn() }, ms))
     }
 
-    // ── Particles flowing through tubes ────────────────────
-    const PER_TUBE = 9
-    const TOTAL    = curves.length * PER_TUBE
-    const pPos     = new Float32Array(TOTAL * 3)
-    const pCol     = new Float32Array(TOTAL * 3)
-
-    const particles: { t: number; ci: number; speed: number }[] = []
-    curves.forEach((_, ci) => {
-      for (let pi = 0; pi < PER_TUBE; pi++) {
-        particles.push({
-          t:     pi / PER_TUBE,
-          ci,
-          speed: 0.08 + Math.random() * 0.03,
-        })
-      }
-    })
-
-    const pGeo = new THREE.BufferGeometry()
-    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3))
-    pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3))
-    geos.push(pGeo)
-
-    // Soft circle texture
-    const dotCanvas = document.createElement('canvas')
-    dotCanvas.width = dotCanvas.height = 32
-    const dCtx = dotCanvas.getContext('2d')!
-    const dGrad = dCtx.createRadialGradient(16, 16, 0, 16, 16, 16)
-    dGrad.addColorStop(0,   'rgba(255,255,255,1)')
-    dGrad.addColorStop(0.4, 'rgba(255,255,255,0.6)')
-    dGrad.addColorStop(1,   'rgba(255,255,255,0)')
-    dCtx.fillStyle = dGrad
-    dCtx.fillRect(0, 0, 32, 32)
-    const dotTex = new THREE.CanvasTexture(dotCanvas)
-
-    const pMat = new THREE.PointsMaterial({
-      size: 0.13, map: dotTex, vertexColors: true,
-      transparent: true, opacity: 1.0,
-      blending: THREE.AdditiveBlending, depthWrite: false,
-      sizeAttenuation: true,
-    })
-    mats.push(pMat)
-    root.add(new THREE.Points(pGeo, pMat))
-
-    const posAttr = pGeo.attributes['position'] as THREE.BufferAttribute
-    const colAttr = pGeo.attributes['color']    as THREE.BufferAttribute
-
-    // ── Mouse parallax ─────────────────────────────────────
-    const mouse = { x: 0, y: 0 }
-    const onMove = (e: MouseEvent) => {
-      mouse.x = (e.clientX / window.innerWidth  - 0.5) * 2
-      mouse.y = (e.clientY / window.innerHeight - 0.5) * 2
-    }
-    window.addEventListener('mousemove', onMove)
-
-    // ── Animation ──────────────────────────────────────────
-    let animId: number
-    const clock = new THREE.Clock()
-    const tealC = new THREE.Color(C_TEAL)
-    const cyanC = new THREE.Color(C_CYAN)
-    const tmpC  = new THREE.Color()
-    const tmpV  = new THREE.Vector3()
-
-    const animate = () => {
-      animId = requestAnimationFrame(animate)
-      const t  = clock.getElapsedTime()
-      const dt = clock.getDelta()
-
-      // Platforms bob, icons rotate
-      platformGroups.forEach((pg, i) => {
-        const base = STAGES[i]?.pos[1] ?? 0
-        pg.position.y = base + Math.sin(t * 0.7 + i * 1.1) * 0.07
-      })
-      iconMeshes.forEach((m, i) => {
-        m.rotation.y = t * 0.5 + i * 0.7
-      })
-
-      // Tube pulse
-      const pulse = 1.8 + Math.sin(t * 1.6) * 0.4
-      tubeMats.forEach(m => { m.emissiveIntensity = pulse })
-
-      // Particles
-      particles.forEach((p, idx) => {
-        p.t = (p.t + dt * p.speed) % 1
-        const curve = curves[p.ci]
-        if (!curve) return
-        const pt = curve.getPoint(p.t)
-        posAttr.array[idx * 3]     = pt.x
-        posAttr.array[idx * 3 + 1] = pt.y
-        posAttr.array[idx * 3 + 2] = pt.z
-        tmpC.lerpColors(tealC, cyanC, Math.sin(p.t * Math.PI))
-        colAttr.array[idx * 3]     = tmpC.r
-        colAttr.array[idx * 3 + 1] = tmpC.g
-        colAttr.array[idx * 3 + 2] = tmpC.b
-      })
-      posAttr.needsUpdate = true
-      colAttr.needsUpdate = true
-
-      // Mouse parallax (very gentle)
-      root.rotation.x += ( mouse.y * 0.06 - root.rotation.x) * 0.04
-      root.rotation.y += (-mouse.x * 0.08 - root.rotation.y) * 0.04
-
-      renderer.render(scene, camera)
-
-      // Update label positions
-      platformGroups.forEach((pg, i) => {
-        const label = labels[i]
-        if (!label) return
-        pg.getWorldPosition(tmpV)
-        tmpV.y += 0.62
-        tmpV.project(camera)
-        const behind = tmpV.z > 1
-        label.style.opacity = behind ? '0' : '1'
-        if (!behind) {
-          label.style.left = `${( tmpV.x * 0.5 + 0.5) * w}px`
-          label.style.top  = `${(-tmpV.y * 0.5 + 0.5) * h}px`
+    const run = () => {
+      setShown(0); setDrawn(0)
+      let t = 350
+      for (let i = 0; i < STAGES.length; i++) {
+        at(t, () => setShown(i + 1))
+        t += POP_MS
+        if (i < STAGES.length - 1) {
+          at(t, () => setDrawn(i + 1))
+          t += DRAW_MS
         }
-      })
+      }
+      at(t + HOLD_END_MS, () => { setShown(0); setDrawn(0) })
+      at(t + HOLD_END_MS + RESET_MS, run)
     }
-    animate()
 
-    // ── Resize ─────────────────────────────────────────────
-    const onResize = () => {
-      w = el.clientWidth
-      h = el.clientHeight
-      const a = w / h
-      camera.left   = -frustum * a
-      camera.right  =  frustum * a
-      camera.top    =  frustum
-      camera.bottom = -frustum
-      camera.updateProjectionMatrix()
-      renderer.setSize(w, h)
-    }
-    const ro = new ResizeObserver(onResize)
-    ro.observe(el)
-
-    return () => {
-      cancelAnimationFrame(animId)
-      ro.disconnect()
-      window.removeEventListener('mousemove', onMove)
-      geos.forEach(g => g.dispose())
-      mats.forEach(m => m.dispose())
-      dotTex.dispose()
-      renderer.dispose()
-      renderer.domElement.remove()
-    }
+    run()
+    return () => { stopped = true; ids.forEach(clearTimeout) }
   }, [])
 
-  const labelStyle: React.CSSProperties = {
-    position:      'absolute',
-    fontFamily:    'var(--font-mono)',
-    fontSize:      '8px',
-    letterSpacing: '0.22em',
-    textTransform: 'uppercase',
-    color:         '#a7d8c8',
-    pointerEvents: 'none',
-    transform:     'translate(-50%, -100%)',
-    padding:       '3px 9px',
-    borderRadius:  '99px',
-    border:        '1px solid rgba(0, 212, 170, 0.3)',
-    background:    'rgba(8, 18, 30, 0.78)',
-    whiteSpace:    'nowrap',
-    transition:    'opacity 0.2s',
-  }
+  const currentIdx   = Math.min(shown - 1, STAGES.length - 1)
+  const currentStage = STAGES[currentIdx]
+  const allDone      = shown === STAGES.length
+  const statusText   = !currentStage
+    ? '— initializing'
+    : allDone
+      ? `✓ ${currentStage.done}`
+      : `▶ ${currentStage.running}`
 
   return (
-    <div ref={wrapRef} style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <div ref={mountRef} style={{ position: 'absolute', inset: 0 }} />
-      <div ref={l0Ref} style={labelStyle}>COMMIT</div>
-      <div ref={l1Ref} style={labelStyle}>BUILD</div>
-      <div ref={l2Ref} style={labelStyle}>TEST</div>
-      <div ref={l3Ref} style={labelStyle}>DEPLOY</div>
-      <div ref={l4Ref} style={labelStyle}>LIVE</div>
+    <div className={styles.wrap}>
+      <svg
+        className={styles.svg}
+        viewBox="0 0 500 400"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        {/* ─── Title bar ─── */}
+        <text x="36"  y="60" className={styles.title}>DEPLOY FLOW</text>
+        <text x="464" y="60" className={styles.meta} textAnchor="end">main · a3f8c1d</text>
+        <line x1="36" y1="78" x2="464" y2="78" className={styles.divider} />
+
+        {/* ─── Axis tick marks (subtle decoration) ─── */}
+        {NODE_X.map((x, i) => (
+          <line key={`tick-${i}`} x1={x} y1="92" x2={x} y2="98" className={styles.tick} />
+        ))}
+
+        {/* ─── Path segments ─── */}
+        {NODE_X.slice(0, -1).map((x, i) => {
+          const next = NODE_X[i + 1] ?? x
+          return (
+            <line
+              key={`seg-${i}`}
+              x1={x + NODE_R + 4}
+              y1={NODE_Y}
+              x2={next - NODE_R - 4}
+              y2={NODE_Y}
+              className={`${styles.segment} ${drawn > i ? styles.segmentDrawn ?? '' : ''}`}
+              style={{ strokeDasharray: PATH_LEN, strokeDashoffset: drawn > i ? 0 : PATH_LEN }}
+            />
+          )
+        })}
+
+        {/* ─── Nodes ─── */}
+        {STAGES.map((stage, i) => {
+          const x         = NODE_X[i] ?? 0
+          const isVisible = shown > i
+          const isCurrent = isVisible && (currentIdx === i) && !(allDone && i < STAGES.length - 1)
+          return (
+            <g key={stage.id} transform={`translate(${x}, ${NODE_Y})`}>
+              <g className={`${styles.node} ${isVisible ? styles.nodeVisible ?? '' : ''}`}>
+                {/* Pulsing ring for current stage */}
+                <circle
+                  r={NODE_R + 6}
+                  className={`${styles.pulse} ${isCurrent ? styles.pulseActive ?? '' : ''}`}
+                />
+                {/* Outer cyan ring */}
+                <circle r={NODE_R} className={styles.ringOuter} />
+                {/* Inner fill */}
+                <circle r={NODE_R - 4} className={styles.fill} />
+                {/* Icon */}
+                <g className={styles.icon}>{renderIcon(stage.id)}</g>
+              </g>
+            </g>
+          )
+        })}
+
+        {/* ─── Labels ─── */}
+        {STAGES.map((stage, i) => {
+          const x         = NODE_X[i] ?? 0
+          const isVisible = shown > i
+          return (
+            <g key={`lbl-${stage.id}`}>
+              <text
+                x={x}
+                y={NODE_Y + NODE_R + 28}
+                textAnchor="middle"
+                className={`${styles.stageLabel} ${isVisible ? styles.stageLabelOn ?? '' : ''}`}
+              >
+                {stage.label}
+              </text>
+            </g>
+          )
+        })}
+
+        {/* ─── Status / progress ─── */}
+        <line x1="36" y1="330" x2="464" y2="330" className={styles.divider} />
+        <text x="36"  y="358" className={styles.status}>{statusText}</text>
+        <text x="464" y="358" className={styles.progress} textAnchor="end">
+          {`${Math.min(shown, STAGES.length)} / ${STAGES.length}`}
+        </text>
+      </svg>
     </div>
   )
+}
+
+// ─── Icon paths ───────────────────────────────────────────────────────────────
+function renderIcon(id: string) {
+  switch (id) {
+    case 'commit':
+      return (
+        <g fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="0"  y1="5"  x2="0"  y2="0"  />
+          <line x1="0"  y1="0"  x2="-4" y2="-4" />
+          <line x1="0"  y1="0"  x2="4"  y2="-4" />
+          <circle cx="0"  cy="6"  r="2"   fill="currentColor" stroke="none" />
+          <circle cx="-5" cy="-5" r="2"   fill="currentColor" stroke="none" />
+          <circle cx="5"  cy="-5" r="2"   fill="currentColor" stroke="none" />
+        </g>
+      )
+    case 'build':
+      return (
+        <g fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="-6" y="-6" width="12" height="12" rx="1" />
+          <line x1="-6" y1="-1" x2="6" y2="-1" />
+          <line x1="0"  y1="-1" x2="0" y2="6" />
+        </g>
+      )
+    case 'test':
+      return (
+        <path
+          d="M -6 0 L -2 5 L 6 -4"
+          fill="none" stroke="currentColor" strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round"
+        />
+      )
+    case 'deploy':
+      return (
+        <g fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="-5" y1="6" x2="5" y2="6" />
+          <line x1="0"  y1="-6" x2="0" y2="3" />
+          <path d="M -4 -2 L 0 -6 L 4 -2" />
+        </g>
+      )
+    case 'live':
+      return (
+        <g>
+          <circle cx="0" cy="0" r="3.5" fill="currentColor" />
+          <g stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none">
+            <line x1="-8" y1="0"  x2="-6" y2="0" />
+            <line x1="8"  y1="0"  x2="6"  y2="0" />
+            <line x1="0"  y1="-8" x2="0"  y2="-6" />
+            <line x1="0"  y1="8"  x2="0"  y2="6" />
+          </g>
+        </g>
+      )
+  }
+  return null
 }
