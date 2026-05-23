@@ -20,10 +20,10 @@ interface Layer {
 const LAYERS: Layer[] = [
   { id: 'frontend', num: '06', label: 'FRONTEND', techs: ['Next.js', 'React', 'TypeScript', 'GSAP'],     color: 'gold',  rot: -1.2, off:   0 },
   { id: 'styling',  num: '05', label: 'STYLING',  techs: ['CSS Modules', 'Tailwind', 'Figma'],            color: 'lav',   rot:  0.8, off:   8 },
-  { id: 'backend',  num: '04', label: 'BACKEND',  techs: ['Node.js', 'tRPC', 'Hono', 'Python'],           color: 'peach', rot: -0.6, off:  -6 },
+  { id: 'backend',  num: '04', label: 'BACKEND',  techs: ['Node.js', 'tRPC', '.NET'],                     color: 'peach', rot: -0.6, off:  -6 },
   { id: 'database', num: '03', label: 'DATABASE', techs: ['PostgreSQL', 'Prisma', 'Redis'],               color: 'gold',  rot:  1.4, off:  10 },
-  { id: 'infra',    num: '02', label: 'INFRA',    techs: ['Vercel', 'Cloudflare', 'Docker'],              color: 'lav',   rot: -1.0, off:  -4 },
-  { id: 'tools',    num: '01', label: 'TOOLS',    techs: ['Git', 'VSCode', 'Linear', 'Notion'],           color: 'peach', rot:  0.5, off:   4 },
+  { id: 'infra',    num: '02', label: 'INFRA',    techs: ['Vercel', 'CI/CD', 'Docker'],                   color: 'lav',   rot: -1.0, off:  -4 },
+  { id: 'tools',    num: '01', label: 'TOOLS',    techs: ['Git', 'VSCode', 'Claude', 'Notion'],           color: 'peach', rot:  0.5, off:   4 },
 ]
 
 export default function Stack() {
