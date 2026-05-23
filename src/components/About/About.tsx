@@ -1,12 +1,9 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import dynamic from 'next/dynamic'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './About.module.css'
-
-const AboutRope = dynamic(() => import('../DiagonalRope/DiagonalRope'), { ssr: false })
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -41,9 +38,7 @@ export default function About() {
       <div className={styles.blobLav} />
       <div className={styles.grid} />
 
-      <div className={styles.ropeWrap}>
-        <AboutRope />
-      </div>
+      <div className={styles.accent} aria-hidden>02</div>
 
       <div className={styles.inner}>
         <div className={styles.eyebrow} id="ab-eyebrow">ABOUT_</div>
