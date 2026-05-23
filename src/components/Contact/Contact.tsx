@@ -7,7 +7,7 @@ import styles from './Contact.module.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const EMAIL = 'thierry@pfstr.dev'
+const EMAIL = 'thierrypfister@protonmail.com'
 
 const SOCIALS = [
   { id: 'github',   label: 'GitHub',   href: 'https://github.com/N4chowastaken' },
