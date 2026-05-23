@@ -2,8 +2,8 @@
 .footer {
   position: relative;
   width: 100%;
-  background: var(--ink);
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  background: #E2D9C5;
+  border-top: 1px solid rgba(20, 18, 15, 0.09);
   overflow: hidden;
 }
 
@@ -22,13 +22,13 @@
   align-items: center;
   gap: 12px;
   padding-bottom: 18px;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.10);
+  border-bottom: 1px dashed rgba(20, 18, 15, 0.10);
   margin-bottom: 50px;
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(234, 232, 226, 0.5);
+  color: var(--ink3);
 }
 
 .statusItem {
@@ -65,7 +65,7 @@
   font-size: clamp(96px, 18vw, 280px);
   line-height: 0.82;
   letter-spacing: -0.04em;
-  color: var(--tx);
+  color: var(--ink);
   margin: 0 0 10px 0;
   transition: opacity 0.4s;
 }
@@ -81,7 +81,7 @@
   font-size: clamp(11px, 1.2vw, 14px);
   letter-spacing: 0.38em;
   text-transform: uppercase;
-  color: rgba(234, 232, 226, 0.55);
+  color: var(--ink2);
   margin-bottom: 56px;
   margin-left: 6px;
 }
@@ -96,8 +96,8 @@
   height: 1px;
   background: linear-gradient(
     to right,
-    rgba(255, 255, 255, 0.14) 0%,
-    rgba(255, 255, 255, 0.03) 100%
+    rgba(20, 18, 15, 0.12) 0%,
+    rgba(20, 18, 15, 0.04) 100%
   );
   margin-bottom: 28px;
 }
@@ -121,7 +121,7 @@
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.14em;
-  color: var(--tx);
+  color: var(--ink);
   font-weight: 500;
 }
 
@@ -129,7 +129,7 @@
   font-family: var(--font-hand);
   font-weight: 700;
   font-size: 18px;
-  color: var(--lav-d);
+  color: var(--lav-deep);
   transform: rotate(-1deg);
   transform-origin: left;
 }
@@ -141,13 +141,13 @@
   gap: 10px;
   padding: 10px 18px;
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.20);
+  border: 1px solid rgba(20, 18, 15, 0.18);
   border-radius: 99px;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--tx);
+  color: var(--ink);
   cursor: pointer;
   transition:
     background 0.3s,
@@ -158,20 +158,20 @@
 }
 
 .topBtn svg {
-  color: rgba(234, 232, 226, 0.55);
+  color: var(--ink3);
   transition: color 0.3s, transform 0.3s;
 }
 
 .topBtn:hover {
-  background: var(--cream);
-  color: var(--ink);
-  border-color: var(--cream);
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
   gap: 14px;
   transform: translateY(-2px);
 }
 
 .topBtn:hover svg {
-  color: var(--ink);
+  color: var(--cream);
   transform: translateY(-2px);
 }
 
