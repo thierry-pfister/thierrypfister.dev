@@ -135,11 +135,11 @@
 /* ── Torus knot canvas ── */
 .knotWrap {
   position: absolute;
-  right: 20px;
+  right: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 520px;
-  height: 520px;
+  width: 600px;
+  height: 600px;
   z-index: 5;
 }
 

@@ -20,15 +20,14 @@ export default function AboutTorusKnot() {
     el.appendChild(renderer.domElement)
 
     const scene  = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 100)
-    camera.position.set(0, 0, 5.5)
+    const camera = new THREE.PerspectiveCamera(46, w / h, 0.1, 100)
+    camera.position.set(0, 0, 7)
 
-    // Dark chrome — lights do all the coloring
     const geo = new THREE.TorusKnotGeometry(1.8, 0.52, 220, 24, 2, 3)
     const mat = new THREE.MeshStandardMaterial({
-      color:     0x14120f,
-      metalness: 1.0,
-      roughness: 0.04,
+      color:     0xe8c870,
+      metalness: 0.55,
+      roughness: 0.22,
     })
     const mesh = new THREE.Mesh(geo, mat)
 
@@ -37,20 +36,20 @@ export default function AboutTorusKnot() {
     scene.add(group)
 
     // Lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.10))
+    scene.add(new THREE.AmbientLight(0xfff8e8, 1.2))
 
-    const key = new THREE.DirectionalLight(0xfff0d0, 3.0)
-    key.position.set(5, 7, 5)
+    const key = new THREE.DirectionalLight(0xffffff, 4.5)
+    key.position.set(4, 6, 6)
     scene.add(key)
 
-    const fill = new THREE.PointLight(0x6366f1, 5.5, 28)
+    const fill = new THREE.PointLight(0x6366f1, 2.8, 28)
     fill.position.set(-5, -4, 2)
     scene.add(fill)
 
-    const rimA = new THREE.PointLight(0xe8c547, 3.2, 22)
+    const rimA = new THREE.PointLight(0xe8c547, 2.2, 22)
     scene.add(rimA)
 
-    const rimB = new THREE.PointLight(0xb8a8e8, 2.4, 20)
+    const rimB = new THREE.PointLight(0xb8a8e8, 1.6, 20)
     scene.add(rimB)
 
     const mouse = { x: 0, y: 0 }
