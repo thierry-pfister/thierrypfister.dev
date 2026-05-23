@@ -1,9 +1,12 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './About.module.css'
+
+const AboutMobius = dynamic(() => import('./AboutMobius'), { ssr: false })
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -37,6 +40,10 @@ export default function About() {
       <div className={styles.blobBut} />
       <div className={styles.blobLav} />
       <div className={styles.grid} />
+
+      <div className={styles.gearsWrap}>
+        <AboutMobius />
+      </div>
 
       <div className={styles.inner}>
         <div className={styles.eyebrow} id="ab-eyebrow">ABOUT_</div>

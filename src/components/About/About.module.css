@@ -132,7 +132,22 @@
   50%       { opacity: 0.5; transform: scale(0.75); }
 }
 
+/* ── Möbius canvas ── */
+.gearsWrap {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 520px;
+  height: 520px;
+  z-index: 5;
+}
+
 /* ── Mobile ── */
+@media (max-width: 900px) {
+  .gearsWrap { display: none; }
+}
+
 @media (max-width: 640px) {
   .inner { padding: 80px 20px 100px; }
   .title { font-size: clamp(52px, 14vw, 90px); }
