@@ -3,353 +3,228 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 
-// ─── Palette ──────────────────────────────────────────────────────────────────
-const C_TEAL   = 0x00e5b0
-const C_CYAN   = 0x00ffdd
-const C_DARK   = 0x050d16
-const C_DARK2  = 0x08121e
+// ─── Palette ──────────────────────────────────────────────────────────
+const C_NAVY    = 0x0a1828
+const C_NAVY2   = 0x0d2238
+const C_TEAL    = 0x00d4aa
+const C_CYAN    = 0x00fff0
+const C_AMBIENT = 0x0a1f30
 
-// ─── Shared material factories ────────────────────────────────────────────────
-function mkNodeMat(mats: THREE.Material[]): THREE.MeshStandardMaterial {
-  const m = new THREE.MeshStandardMaterial({
-    color: C_DARK2, metalness: 0.9, roughness: 0.2,
-    emissive: 0x002218, emissiveIntensity: 0.6,
-  })
-  mats.push(m)
-  return m
-}
+type IconType = 'box' | 'hex' | 'ring' | 'cone' | 'orb'
 
-function mkEdgesMat(mats: THREE.Material[]): THREE.LineBasicMaterial {
-  const m = new THREE.LineBasicMaterial({ color: C_TEAL })
-  mats.push(m)
-  return m
-}
+const STAGES: { label: string; pos: [number, number, number]; icon: IconType }[] = [
+  { label: 'COMMIT', pos: [-3.6, 0, -0.4], icon: 'box'  },
+  { label: 'BUILD',  pos: [-1.8, 0,  0.4], icon: 'hex'  },
+  { label: 'TEST',   pos: [ 0.0, 0, -0.4], icon: 'ring' },
+  { label: 'DEPLOY', pos: [ 1.8, 0,  0.4], icon: 'cone' },
+  { label: 'LIVE',   pos: [ 3.6, 0, -0.4], icon: 'orb'  },
+]
 
-function withEdges(
-  geo: THREE.BufferGeometry,
-  mat: THREE.MeshStandardMaterial,
-  eMat: THREE.LineBasicMaterial,
+function buildIcon(
+  type: IconType,
+  bodyMat: THREE.MeshStandardMaterial,
+  glowMat: THREE.MeshStandardMaterial,
   geos: THREE.BufferGeometry[],
-): THREE.Group {
-  const g    = new THREE.Group()
-  g.add(new THREE.Mesh(geo, mat))
-  const eGeo = new THREE.EdgesGeometry(geo, 20)
-  geos.push(eGeo)
-  g.add(new THREE.LineSegments(eGeo, eMat))
-  return g
-}
+): THREE.Mesh {
+  let geo: THREE.BufferGeometry
+  let mat = bodyMat
+  let tiltX = 0
 
-// ─── Node icon builders ───────────────────────────────────────────────────────
-function buildCodeBadge(geos: THREE.BufferGeometry[], mats: THREE.Material[]): THREE.Group {
-  const nMat = mkNodeMat(mats)
-  const eMat = mkEdgesMat(mats)
-  const g    = new THREE.Group()
-
-  const hexGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.07, 6)
-  geos.push(hexGeo)
-  g.add(withEdges(hexGeo, nMat, eMat, geos))
-
-  const ringGeo = new THREE.TorusGeometry(0.11, 0.022, 6, 18)
-  geos.push(ringGeo)
-  const ring    = withEdges(ringGeo, nMat, eMat, geos)
-  ring.rotation.x = Math.PI / 2
-  g.add(ring)
-  return g
-}
-
-function buildGear(geos: THREE.BufferGeometry[], mats: THREE.Material[]): THREE.Group {
-  const nMat    = mkNodeMat(mats)
-  const eMat    = mkEdgesMat(mats)
-  const g       = new THREE.Group()
-  const TEETH   = 7
-
-  const discGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.07, 20)
-  geos.push(discGeo)
-  g.add(withEdges(discGeo, nMat, eMat, geos))
-
-  const toothGeo  = new THREE.BoxGeometry(0.07, 0.07, 0.09)
-  const toothEGeo = new THREE.EdgesGeometry(toothGeo, 20)
-  geos.push(toothGeo, toothEGeo)
-  for (let i = 0; i < TEETH; i++) {
-    const a  = (i / TEETH) * Math.PI * 2
-    const tg = new THREE.Group()
-    tg.add(new THREE.Mesh(toothGeo, nMat))
-    tg.add(new THREE.LineSegments(toothEGeo, eMat))
-    tg.position.set(Math.cos(a) * 0.19, 0, Math.sin(a) * 0.19)
-    tg.rotation.y = a
-    g.add(tg)
+  switch (type) {
+    case 'box':
+      geo = new THREE.BoxGeometry(0.2, 0.2, 0.2)
+      break
+    case 'hex':
+      geo = new THREE.CylinderGeometry(0.14, 0.14, 0.2, 6)
+      break
+    case 'ring':
+      geo = new THREE.TorusGeometry(0.13, 0.03, 12, 28)
+      tiltX = Math.PI / 2
+      break
+    case 'cone':
+      geo = new THREE.ConeGeometry(0.14, 0.24, 6)
+      break
+    case 'orb':
+      geo = new THREE.SphereGeometry(0.14, 24, 24)
+      mat = glowMat
+      break
   }
 
-  const holeGeo = new THREE.TorusGeometry(0.055, 0.016, 6, 14)
-  geos.push(holeGeo)
-  const hole    = withEdges(holeGeo, nMat, eMat, geos)
-  hole.rotation.x = Math.PI / 2
-  g.add(hole)
-  return g
+  geos.push(geo)
+  const mesh = new THREE.Mesh(geo, mat)
+  if (tiltX) mesh.rotation.x = tiltX
+  return mesh
 }
 
-function buildContainer(geos: THREE.BufferGeometry[], mats: THREE.Material[]): THREE.Group {
-  const nMat = mkNodeMat(mats)
-  const eMat = mkEdgesMat(mats)
-  const g    = new THREE.Group()
-
-  const boxGeo = new THREE.BoxGeometry(0.28, 0.22, 0.22)
-  geos.push(boxGeo)
-  g.add(withEdges(boxGeo, nMat, eMat, geos))
-
-  for (const y of [-0.07, 0.07]) {
-    const ribGeo = new THREE.BoxGeometry(0.3, 0.018, 0.24)
-    geos.push(ribGeo)
-    const rib = withEdges(ribGeo, nMat, eMat, geos)
-    rib.position.y = y
-    g.add(rib)
-  }
-  return g
-}
-
-function buildCheckmark(geos: THREE.BufferGeometry[], mats: THREE.Material[]): THREE.Group {
-  const nMat = mkNodeMat(mats)
-  const eMat = mkEdgesMat(mats)
-  const g    = new THREE.Group()
-
-  const shortGeo = new THREE.BoxGeometry(0.055, 0.17, 0.055)
-  geos.push(shortGeo)
-  const short = withEdges(shortGeo, nMat, eMat, geos)
-  short.position.set(-0.055, -0.03, 0)
-  short.rotation.z = Math.PI / 4
-  g.add(short)
-
-  const longGeo = new THREE.BoxGeometry(0.055, 0.28, 0.055)
-  geos.push(longGeo)
-  const long = withEdges(longGeo, nMat, eMat, geos)
-  long.position.set(0.065, 0.04, 0)
-  long.rotation.z = -Math.PI / 3.5
-  g.add(long)
-  return g
-}
-
-function buildServer(geos: THREE.BufferGeometry[], mats: THREE.Material[]): THREE.Group {
-  const nMat = mkNodeMat(mats)
-  const eMat = mkEdgesMat(mats)
-  const g    = new THREE.Group()
-  const dotMat = new THREE.MeshBasicMaterial({ color: C_TEAL })
-  mats.push(dotMat)
-
-  for (const y of [-0.1, 0, 0.1]) {
-    const rackGeo = new THREE.BoxGeometry(0.32, 0.058, 0.18)
-    geos.push(rackGeo)
-    const rack = withEdges(rackGeo, nMat, eMat, geos)
-    rack.position.y = y
-    g.add(rack)
-
-    const dotGeo = new THREE.SphereGeometry(0.015, 6, 6)
-    geos.push(dotGeo)
-    const dot = new THREE.Mesh(dotGeo, dotMat)
-    dot.position.set(0.13, y, 0.08)
-    g.add(dot)
-  }
-  return g
-}
-
-function buildRollback(geos: THREE.BufferGeometry[], mats: THREE.Material[]): THREE.Group {
-  const nMat = mkNodeMat(mats)
-  const eMat = mkEdgesMat(mats)
-  const g    = new THREE.Group()
-
-  const arcGeo = new THREE.TorusGeometry(0.19, 0.032, 8, 32, Math.PI * 1.55)
-  geos.push(arcGeo)
-  g.add(withEdges(arcGeo, nMat, eMat, geos))
-
-  const arGeo = new THREE.ConeGeometry(0.048, 0.1, 6)
-  geos.push(arGeo)
-  const arrow = withEdges(arGeo, nMat, eMat, geos)
-  arrow.position.set(0.17, -0.12, 0)
-  arrow.rotation.z = -0.8
-  g.add(arrow)
-  return g
-}
-
-function buildRocket(geos: THREE.BufferGeometry[], mats: THREE.Material[]): THREE.Group {
-  const nMat   = mkNodeMat(mats)
-  const eMat   = mkEdgesMat(mats)
-  const glowMat = new THREE.MeshBasicMaterial({
-    color: C_CYAN, transparent: true, opacity: 0.45,
-    blending: THREE.AdditiveBlending, depthWrite: false,
-  })
-  mats.push(glowMat)
-  const g = new THREE.Group()
-
-  const bodyGeo = new THREE.CylinderGeometry(0.08, 0.1, 0.28, 8)
-  geos.push(bodyGeo)
-  g.add(withEdges(bodyGeo, nMat, eMat, geos))
-
-  const noseGeo = new THREE.ConeGeometry(0.08, 0.15, 8)
-  geos.push(noseGeo)
-  const nose = withEdges(noseGeo, nMat, eMat, geos)
-  nose.position.y = 0.215
-  g.add(nose)
-
-  const finGeo  = new THREE.BoxGeometry(0.04, 0.11, 0.07)
-  const finEGeo = new THREE.EdgesGeometry(finGeo, 20)
-  geos.push(finGeo, finEGeo)
-  for (let i = 0; i < 3; i++) {
-    const a  = (i / 3) * Math.PI * 2
-    const fg = new THREE.Group()
-    fg.add(new THREE.Mesh(finGeo, nMat))
-    fg.add(new THREE.LineSegments(finEGeo, eMat))
-    fg.position.set(Math.cos(a) * 0.11, -0.1, Math.sin(a) * 0.11)
-    fg.rotation.y = a
-    g.add(fg)
-  }
-
-  const exGeo = new THREE.ConeGeometry(0.065, 0.12, 8)
-  geos.push(exGeo)
-  const ex = new THREE.Mesh(exGeo, glowMat)
-  ex.position.y = -0.2
-  ex.rotation.z = Math.PI
-  g.add(ex)
-  return g
-}
-
-// ─── Tube between two nodes with arc ─────────────────────────────────────────
-function buildTubeSegment(
-  a: THREE.Vector3,
-  b: THREE.Vector3,
-  arcOffset: THREE.Vector3,
-  geos: THREE.BufferGeometry[],
-  mats: THREE.Material[],
-  scene: THREE.Scene,
-): THREE.CatmullRomCurve3 {
-  const mid   = new THREE.Vector3().lerpVectors(a, b, 0.5).add(arcOffset)
-  const curve = new THREE.CatmullRomCurve3([a, mid, b])
-
-  // Inner glow tube
-  const iGeo = new THREE.TubeGeometry(curve, 50, 0.022, 6, false)
-  geos.push(iGeo)
-  const iMat = new THREE.MeshStandardMaterial({
-    color: C_TEAL, emissive: C_TEAL, emissiveIntensity: 2.2,
-    metalness: 0, roughness: 1,
-  })
-  mats.push(iMat)
-  scene.add(new THREE.Mesh(iGeo, iMat))
-
-  // Outer halo
-  const oGeo = new THREE.TubeGeometry(curve, 50, 0.055, 6, false)
-  geos.push(oGeo)
-  const oMat = new THREE.MeshBasicMaterial({
-    color: C_CYAN, transparent: true, opacity: 0.07,
-    blending: THREE.AdditiveBlending, depthWrite: false,
-  })
-  mats.push(oMat)
-  scene.add(new THREE.Mesh(oGeo, oMat))
-
-  return curve
-}
-
-// ─── Main component ───────────────────────────────────────────────────────────
 export default function CICDPipeline3D() {
+  const wrapRef  = useRef<HTMLDivElement>(null)
   const mountRef = useRef<HTMLDivElement>(null)
+  const l0Ref    = useRef<HTMLDivElement>(null)
+  const l1Ref    = useRef<HTMLDivElement>(null)
+  const l2Ref    = useRef<HTMLDivElement>(null)
+  const l3Ref    = useRef<HTMLDivElement>(null)
+  const l4Ref    = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const el = mountRef.current
-    if (!el) return
+    const wrap = wrapRef.current
+    const el   = mountRef.current
+    const labelEls = [l0Ref.current, l1Ref.current, l2Ref.current, l3Ref.current, l4Ref.current]
+    if (!wrap || !el || labelEls.some(l => !l)) return
+    const labels = labelEls as HTMLDivElement[]
 
     let w = el.clientWidth
     let h = el.clientHeight
 
-    // ── Renderer ──────────────────────────────────────────────────
+    // ── Renderer ───────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     renderer.setSize(w, h)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setClearColor(0x000000, 0)
     el.appendChild(renderer.domElement)
 
-    // ── Camera (orthographic isometric) ───────────────────────────
-    const frustum = 5.5
+    // ── Orthographic isometric camera ──────────────────────
+    const frustum = 3.4
     const aspect  = w / h
     const camera  = new THREE.OrthographicCamera(
-      -frustum * aspect, frustum * aspect,
+      -frustum * aspect,  frustum * aspect,
        frustum,          -frustum,
-      0.1, 200,
+      0.1, 100,
     )
-    const CAM_DIST = 14
-    camera.position.set(CAM_DIST, CAM_DIST * 0.65, CAM_DIST)
-    camera.lookAt(0, 0.2, 0)
+    camera.position.set(10, 7, 10)
+    camera.lookAt(0, 0, 0)
 
     const scene = new THREE.Scene()
 
-    // ── Lights ────────────────────────────────────────────────────
-    scene.add(new THREE.AmbientLight(0x0a1a2e, 2.5))
+    // ── Lights ─────────────────────────────────────────────
+    scene.add(new THREE.AmbientLight(C_AMBIENT, 2.0))
 
-    const keyLight = new THREE.DirectionalLight(0x00e5b0, 1.8)
-    keyLight.position.set(5, 10, 5)
-    scene.add(keyLight)
+    const key = new THREE.DirectionalLight(0x00ffd0, 1.4)
+    key.position.set(5, 8, 5)
+    scene.add(key)
 
-    const rimLight = new THREE.DirectionalLight(0x0044ff, 0.6)
-    rimLight.position.set(-8, -3, -5)
-    scene.add(rimLight)
+    const rim = new THREE.DirectionalLight(0x0044aa, 0.7)
+    rim.position.set(-6, -2, -4)
+    scene.add(rim)
 
-    // ── Disposables ───────────────────────────────────────────────
+    // ── Disposables ────────────────────────────────────────
     const geos: THREE.BufferGeometry[] = []
     const mats: THREE.Material[]       = []
 
-    // ── Node positions ────────────────────────────────────────────
-    const NODE_POS = [
-      new THREE.Vector3(-3.4,  0.15,  0.7),  // 0 code badge
-      new THREE.Vector3(-2.1, -0.05, -0.5),  // 1 gear
-      new THREE.Vector3(-0.7,  0.25,  0.55), // 2 container (build)
-      new THREE.Vector3( 0.6, -0.1,  -0.35), // 3 checkmark (test)
-      new THREE.Vector3( 1.9,  0.1,   0.6),  // 4 server (deploy)
-      new THREE.Vector3( 3.1, -0.05, -0.3),  // 5 rollback
-      new THREE.Vector3( 4.1,  0.2,   0.5),  // 6 rocket
-    ]
+    // ── Shared materials ───────────────────────────────────
+    const platformMat = new THREE.MeshStandardMaterial({
+      color: C_NAVY2, metalness: 0.85, roughness: 0.2,
+      emissive: C_NAVY, emissiveIntensity: 0.35,
+    })
+    mats.push(platformMat)
 
-    // Arc offsets between each pair of nodes
-    const ARC_OFF = [
-      new THREE.Vector3(0,  0.55,  0.2),
-      new THREE.Vector3(0,  0.4,  -0.3),
-      new THREE.Vector3(0, -0.35,  0.15),
-      new THREE.Vector3(0,  0.45, -0.25),
-      new THREE.Vector3(0, -0.3,   0.2),
-      new THREE.Vector3(0,  0.4,   0.1),
-    ]
+    const iconMat = new THREE.MeshStandardMaterial({
+      color: C_NAVY2, metalness: 0.85, roughness: 0.2,
+      emissive: C_TEAL, emissiveIntensity: 0.18,
+    })
+    mats.push(iconMat)
 
-    // ── Build icon groups ─────────────────────────────────────────
-    const BUILDERS = [buildCodeBadge, buildGear, buildContainer, buildCheckmark, buildServer, buildRollback, buildRocket]
-    const nodeGroups: THREE.Group[] = BUILDERS.map((fn, i) => {
-      const g = fn(geos, mats)
-      g.position.copy(NODE_POS[i] ?? new THREE.Vector3())
-      g.scale.setScalar(0.72)
-      scene.add(g)
+    const orbGlowMat = new THREE.MeshStandardMaterial({
+      color: C_TEAL, metalness: 0.3, roughness: 0.4,
+      emissive: C_CYAN, emissiveIntensity: 2.2,
+    })
+    mats.push(orbGlowMat)
 
-      // Per-node teal point light
-      const pl = new THREE.PointLight(C_TEAL, 1.4, 2.2)
-      pl.position.copy(NODE_POS[i] ?? new THREE.Vector3())
-      scene.add(pl)
+    const accentMat = new THREE.MeshBasicMaterial({ color: C_TEAL })
+    mats.push(accentMat)
 
-      return g
+    // ── Root group ─────────────────────────────────────────
+    const root = new THREE.Group()
+    scene.add(root)
+
+    const platformGroups: THREE.Group[] = []
+    const iconMeshes:     THREE.Mesh[]  = []
+
+    // ── Build platforms ────────────────────────────────────
+    STAGES.forEach(stage => {
+      const pg = new THREE.Group()
+
+      // Platform body — hexagonal disc
+      const pGeo = new THREE.CylinderGeometry(0.44, 0.44, 0.08, 6)
+      geos.push(pGeo)
+      pg.add(new THREE.Mesh(pGeo, platformMat))
+
+      // Top accent ring
+      const ringGeo = new THREE.TorusGeometry(0.44, 0.011, 8, 24)
+      geos.push(ringGeo)
+      const ring = new THREE.Mesh(ringGeo, accentMat)
+      ring.rotation.x = Math.PI / 2
+      ring.position.y = 0.04
+      pg.add(ring)
+
+      // Icon on top
+      const icon = buildIcon(stage.icon, iconMat, orbGlowMat, geos)
+      icon.position.y = 0.24
+      pg.add(icon)
+      iconMeshes.push(icon)
+
+      // Position
+      pg.position.set(stage.pos[0], stage.pos[1], stage.pos[2])
+
+      // Per-platform uplight (small range)
+      const uplight = new THREE.PointLight(C_TEAL, 0.7, 1.4)
+      uplight.position.set(0, 0.5, 0)
+      pg.add(uplight)
+
+      root.add(pg)
+      platformGroups.push(pg)
     })
 
-    // ── Build tubes + particles ───────────────────────────────────
+    // ── Tubes between platforms ────────────────────────────
     const curves: THREE.CatmullRomCurve3[] = []
-    for (let i = 0; i < NODE_POS.length - 1; i++) {
-      const from = NODE_POS[i]!
-      const to   = NODE_POS[i + 1]!
-      const off  = ARC_OFF[i] ?? new THREE.Vector3()
-      curves.push(buildTubeSegment(from, to, off, geos, mats, scene))
+    const tubeMats: THREE.MeshStandardMaterial[] = []
+
+    for (let i = 0; i < STAGES.length - 1; i++) {
+      const sa = STAGES[i]!
+      const sb = STAGES[i + 1]!
+      const a = new THREE.Vector3(sa.pos[0], sa.pos[1] + 0.22, sa.pos[2])
+      const b = new THREE.Vector3(sb.pos[0], sb.pos[1] + 0.22, sb.pos[2])
+      const mid = new THREE.Vector3().lerpVectors(a, b, 0.5)
+      mid.y += 0.7
+
+      const curve = new THREE.CatmullRomCurve3([a, mid, b])
+      curves.push(curve)
+
+      // Inner emissive tube
+      const innerGeo = new THREE.TubeGeometry(curve, 60, 0.022, 6, false)
+      geos.push(innerGeo)
+      const innerMat = new THREE.MeshStandardMaterial({
+        color: C_TEAL, emissive: C_TEAL, emissiveIntensity: 2.0,
+        metalness: 0, roughness: 1,
+      })
+      mats.push(innerMat)
+      tubeMats.push(innerMat)
+      root.add(new THREE.Mesh(innerGeo, innerMat))
+
+      // Outer halo
+      const outerGeo = new THREE.TubeGeometry(curve, 60, 0.06, 6, false)
+      geos.push(outerGeo)
+      const outerMat = new THREE.MeshBasicMaterial({
+        color: C_CYAN, transparent: true, opacity: 0.09,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      })
+      mats.push(outerMat)
+      root.add(new THREE.Mesh(outerGeo, outerMat))
     }
 
-    // Particle system
-    const P_PER_TUBE = 7
-    const TOTAL_P    = curves.length * P_PER_TUBE
-    const pPos       = new Float32Array(TOTAL_P * 3)
-    const pCol       = new Float32Array(TOTAL_P * 3)
+    // ── Particles flowing through tubes ────────────────────
+    const PER_TUBE = 9
+    const TOTAL    = curves.length * PER_TUBE
+    const pPos     = new Float32Array(TOTAL * 3)
+    const pCol     = new Float32Array(TOTAL * 3)
 
-    // Stagger particle start positions
-    const particleTs: { t: number; curveIdx: number; speed: number }[] = []
+    const particles: { t: number; ci: number; speed: number }[] = []
     curves.forEach((_, ci) => {
-      for (let pi = 0; pi < P_PER_TUBE; pi++) {
-        particleTs.push({ t: pi / P_PER_TUBE, curveIdx: ci, speed: 0.045 + Math.random() * 0.02 })
+      for (let pi = 0; pi < PER_TUBE; pi++) {
+        particles.push({
+          t:     pi / PER_TUBE,
+          ci,
+          speed: 0.08 + Math.random() * 0.03,
+        })
       }
     })
 
@@ -358,12 +233,14 @@ export default function CICDPipeline3D() {
     pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3))
     geos.push(pGeo)
 
+    // Soft circle texture
     const dotCanvas = document.createElement('canvas')
     dotCanvas.width = dotCanvas.height = 32
     const dCtx = dotCanvas.getContext('2d')!
     const dGrad = dCtx.createRadialGradient(16, 16, 0, 16, 16, 16)
-    dGrad.addColorStop(0, 'rgba(255,255,255,1)')
-    dGrad.addColorStop(1, 'rgba(255,255,255,0)')
+    dGrad.addColorStop(0,   'rgba(255,255,255,1)')
+    dGrad.addColorStop(0.4, 'rgba(255,255,255,0.6)')
+    dGrad.addColorStop(1,   'rgba(255,255,255,0)')
     dCtx.fillStyle = dGrad
     dCtx.fillRect(0, 0, 32, 32)
     const dotTex = new THREE.CanvasTexture(dotCanvas)
@@ -375,81 +252,94 @@ export default function CICDPipeline3D() {
       sizeAttenuation: true,
     })
     mats.push(pMat)
-    const particles = new THREE.Points(pGeo, pMat)
-    scene.add(particles)
+    root.add(new THREE.Points(pGeo, pMat))
 
-    const pPosAttr = pGeo.attributes['position'] as THREE.BufferAttribute
-    const pColAttr = pGeo.attributes['color']    as THREE.BufferAttribute
+    const posAttr = pGeo.attributes['position'] as THREE.BufferAttribute
+    const colAttr = pGeo.attributes['color']    as THREE.BufferAttribute
 
-    // ── Node base rotations ───────────────────────────────────────
-    const baseRotY = nodeGroups.map(() => Math.random() * Math.PI * 2)
-    const floatPh  = nodeGroups.map((_, i) => i * 1.1)
+    // ── Mouse parallax ─────────────────────────────────────
+    const mouse = { x: 0, y: 0 }
+    const onMove = (e: MouseEvent) => {
+      mouse.x = (e.clientX / window.innerWidth  - 0.5) * 2
+      mouse.y = (e.clientY / window.innerHeight - 0.5) * 2
+    }
+    window.addEventListener('mousemove', onMove)
 
-    // ── Animation ─────────────────────────────────────────────────
-    let   animId: number
-    const clock  = new THREE.Clock()
-    const tealC  = new THREE.Color(C_TEAL)
-    const cyanC  = new THREE.Color(C_CYAN)
+    // ── Animation ──────────────────────────────────────────
+    let animId: number
+    const clock = new THREE.Clock()
+    const tealC = new THREE.Color(C_TEAL)
+    const cyanC = new THREE.Color(C_CYAN)
+    const tmpC  = new THREE.Color()
+    const tmpV  = new THREE.Vector3()
 
     const animate = () => {
       animId = requestAnimationFrame(animate)
       const t  = clock.getElapsedTime()
       const dt = clock.getDelta()
 
-      // Orbit camera slowly
-      const camA = t * 0.07
-      const cy   = Math.cos(camA) * CAM_DIST
-      const cx   = Math.sin(camA) * CAM_DIST
-      camera.position.set(cx, CAM_DIST * 0.65, cy)
-      camera.lookAt(0, 0.2, 0)
-
-      // Float + rotate nodes
-      nodeGroups.forEach((g, i) => {
-        const ph  = floatPh[i] ?? 0
-        const ry  = baseRotY[i] ?? 0
-        g.position.y = (NODE_POS[i]?.y ?? 0) + Math.sin(t * 0.7 + ph) * 0.06
-        g.rotation.y = ry + t * 0.4
+      // Platforms bob, icons rotate
+      platformGroups.forEach((pg, i) => {
+        const base = STAGES[i]?.pos[1] ?? 0
+        pg.position.y = base + Math.sin(t * 0.7 + i * 1.1) * 0.07
+      })
+      iconMeshes.forEach((m, i) => {
+        m.rotation.y = t * 0.5 + i * 0.7
       })
 
-      // Advance particles
-      particleTs.forEach((p, idx) => {
+      // Tube pulse
+      const pulse = 1.8 + Math.sin(t * 1.6) * 0.4
+      tubeMats.forEach(m => { m.emissiveIntensity = pulse })
+
+      // Particles
+      particles.forEach((p, idx) => {
         p.t = (p.t + dt * p.speed) % 1
-        const curve = curves[p.curveIdx]
+        const curve = curves[p.ci]
         if (!curve) return
-        const pt  = curve.getPoint(p.t)
-        const frac = p.t
-        const col = new THREE.Color().lerpColors(tealC, cyanC, Math.sin(frac * Math.PI))
-        pPosAttr.array[idx * 3]     = pt.x
-        pPosAttr.array[idx * 3 + 1] = pt.y
-        pPosAttr.array[idx * 3 + 2] = pt.z
-        pColAttr.array[idx * 3]     = col.r
-        pColAttr.array[idx * 3 + 1] = col.g
-        pColAttr.array[idx * 3 + 2] = col.b
+        const pt = curve.getPoint(p.t)
+        posAttr.array[idx * 3]     = pt.x
+        posAttr.array[idx * 3 + 1] = pt.y
+        posAttr.array[idx * 3 + 2] = pt.z
+        tmpC.lerpColors(tealC, cyanC, Math.sin(p.t * Math.PI))
+        colAttr.array[idx * 3]     = tmpC.r
+        colAttr.array[idx * 3 + 1] = tmpC.g
+        colAttr.array[idx * 3 + 2] = tmpC.b
       })
-      pPosAttr.needsUpdate = true
-      pColAttr.needsUpdate = true
+      posAttr.needsUpdate = true
+      colAttr.needsUpdate = true
 
-      // Pulse tube emissive
-      const pulse = 1.8 + Math.sin(t * 2.2) * 0.4
-      mats.forEach(m => {
-        if (m instanceof THREE.MeshStandardMaterial && m.emissive.getHex() === C_TEAL) {
-          m.emissiveIntensity = pulse
-        }
-      })
+      // Mouse parallax (very gentle)
+      root.rotation.x += ( mouse.y * 0.06 - root.rotation.x) * 0.04
+      root.rotation.y += (-mouse.x * 0.08 - root.rotation.y) * 0.04
 
       renderer.render(scene, camera)
+
+      // Update label positions
+      platformGroups.forEach((pg, i) => {
+        const label = labels[i]
+        if (!label) return
+        pg.getWorldPosition(tmpV)
+        tmpV.y += 0.62
+        tmpV.project(camera)
+        const behind = tmpV.z > 1
+        label.style.opacity = behind ? '0' : '1'
+        if (!behind) {
+          label.style.left = `${( tmpV.x * 0.5 + 0.5) * w}px`
+          label.style.top  = `${(-tmpV.y * 0.5 + 0.5) * h}px`
+        }
+      })
     }
     animate()
 
-    // ── Resize ────────────────────────────────────────────────────
+    // ── Resize ─────────────────────────────────────────────
     const onResize = () => {
       w = el.clientWidth
       h = el.clientHeight
       const a = w / h
-      ;(camera as THREE.OrthographicCamera).left   = -frustum * a
-      ;(camera as THREE.OrthographicCamera).right  =  frustum * a
-      ;(camera as THREE.OrthographicCamera).top    =  frustum
-      ;(camera as THREE.OrthographicCamera).bottom = -frustum
+      camera.left   = -frustum * a
+      camera.right  =  frustum * a
+      camera.top    =  frustum
+      camera.bottom = -frustum
       camera.updateProjectionMatrix()
       renderer.setSize(w, h)
     }
@@ -459,6 +349,7 @@ export default function CICDPipeline3D() {
     return () => {
       cancelAnimationFrame(animId)
       ro.disconnect()
+      window.removeEventListener('mousemove', onMove)
       geos.forEach(g => g.dispose())
       mats.forEach(m => m.dispose())
       dotTex.dispose()
@@ -467,5 +358,31 @@ export default function CICDPipeline3D() {
     }
   }, [])
 
-  return <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
+  const labelStyle: React.CSSProperties = {
+    position:      'absolute',
+    fontFamily:    'var(--font-mono)',
+    fontSize:      '8px',
+    letterSpacing: '0.22em',
+    textTransform: 'uppercase',
+    color:         '#a7d8c8',
+    pointerEvents: 'none',
+    transform:     'translate(-50%, -100%)',
+    padding:       '3px 9px',
+    borderRadius:  '99px',
+    border:        '1px solid rgba(0, 212, 170, 0.3)',
+    background:    'rgba(8, 18, 30, 0.78)',
+    whiteSpace:    'nowrap',
+    transition:    'opacity 0.2s',
+  }
+
+  return (
+    <div ref={wrapRef} style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <div ref={mountRef} style={{ position: 'absolute', inset: 0 }} />
+      <div ref={l0Ref} style={labelStyle}>COMMIT</div>
+      <div ref={l1Ref} style={labelStyle}>BUILD</div>
+      <div ref={l2Ref} style={labelStyle}>TEST</div>
+      <div ref={l3Ref} style={labelStyle}>DEPLOY</div>
+      <div ref={l4Ref} style={labelStyle}>LIVE</div>
+    </div>
+  )
 }
