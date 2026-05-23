@@ -132,14 +132,14 @@
   50%       { opacity: 0.5; transform: scale(0.75); }
 }
 
-/* ── Möbius canvas ── */
+/* ── Helix canvas ── */
 .gearsWrap {
   position: absolute;
-  right: 0;
+  right: 24px;
   top: 50%;
   transform: translateY(-50%);
-  width: 520px;
-  height: 520px;
+  width: 560px;
+  height: 680px;
   z-index: 5;
 }
 
