@@ -2,11 +2,11 @@ import Link from 'next/link'
 import styles from './Nav.module.css'
 
 const links = [
-  { label: 'Work',     href: '#work' },
-  { label: 'About',    href: '#about' },
-  { label: 'Services', href: '#services' },
-  { label: 'Stack',    href: '#stack' },
-  { label: 'Contact',  href: '#contact' },
+  { label: 'Work',    href: '/#work' },
+  { label: 'About',   href: '/#about' },
+  { label: 'Stack',   href: '/#stack' },
+  { label: 'Writing', href: '/blog' },
+  { label: 'Contact', href: '/#contact' },
 ]
 
 export default function Nav() {
