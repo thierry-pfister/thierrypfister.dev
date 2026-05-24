@@ -96,7 +96,7 @@ export default function Contact() {
       <div className={styles.blobLav} />
 
       <div className={styles.inner}>
-        <div className={styles.eyebrow} id="co-eyebrow">CONTACT / 05_</div>
+        <div className={styles.eyebrow} id="co-eyebrow">CONTACT_</div>
 
         <h2 className={styles.title} id="co-title">
           LET&apos;S BUILD<br />

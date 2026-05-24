@@ -81,7 +81,7 @@ export default function Stack() {
 
       <div className={styles.inner}>
         <div className={styles.left}>
-          <div className={styles.eyebrow} id="st-eyebrow">STACK / 04_</div>
+          <div className={styles.eyebrow} id="st-eyebrow">STACK_</div>
 
           <h2 className={styles.title} id="st-title">
             TOOLS<br />
