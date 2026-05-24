@@ -98,7 +98,7 @@ export default function Hero() {
       {/* Type block */}
       <div className={styles.typeBlock}>
         <div className={styles.handLayer} id="hand-layer">
-          <span className={styles.hand1}>freelance dev &amp; creator ✦</span>
+          <span className={styles.hand1}>dev &amp; creator · open to part-time + freelance ✦</span>
         </div>
         <span className={styles.titlePfstr} id="tp">
           PFSTR<em>_</em>

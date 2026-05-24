@@ -139,7 +139,7 @@ export default function Contact() {
 
         <div className={styles.badge} id="co-badge">
           <div className={styles.dot} />
-          available for freelance · based in switzerland
+          open to part-time + freelance · based in switzerland
         </div>
       </div>
     </section>

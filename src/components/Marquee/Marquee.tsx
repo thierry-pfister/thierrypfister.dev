@@ -1,5 +1,5 @@
 const ITEMS = [
-  'Available for Freelance',
+  'Open for Part-Time or Freelance',
   'Based in Switzerland',
   'Full-Stack Developer',
   'Open Source',

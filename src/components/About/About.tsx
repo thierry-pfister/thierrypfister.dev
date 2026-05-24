@@ -55,18 +55,18 @@ export default function About() {
         </h2>
 
         <div className={styles.hand} id="ab-hand">
-          freelance dev in progress ✦
+          looking for the next chapter ✦
         </div>
 
         <p className={styles.body} id="ab-body">
           I&apos;m Thierry — a full-stack developer based in Switzerland.
           I build fast, clean products for the web.
-          Freelancing on the side, always shipping something new.
+          Open to part-time roles and the right freelance projects.
         </p>
 
         <div className={styles.badge} id="ab-badge">
           <div className={styles.dot} />
-          Available for freelance
+          Open to part-time + freelance
         </div>
       </div>
     </section>
