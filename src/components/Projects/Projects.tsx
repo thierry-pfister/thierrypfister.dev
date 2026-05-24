@@ -59,7 +59,7 @@ export default function Projects({ projects }: Props) {
 
       {/* Header — top-left */}
       <div className={styles.header}>
-        <span className={styles.label} data-proj-header>Selected projects</span>
+        <span className={styles.label} data-proj-header>SELECTED_</span>
         <h2 className={styles.title} data-proj-header>
           PROJECTS<em className={styles.underscore}>_</em>
         </h2>
