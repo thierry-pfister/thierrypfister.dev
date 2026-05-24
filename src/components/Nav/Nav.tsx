@@ -12,9 +12,12 @@ const links = [
 export default function Nav() {
   return (
     <nav className={styles.nav}>
-      <Link href="/" className={styles.logo}>
-        PFSTR<em className={styles.underscore}>_</em>
-      </Link>
+      <div className={styles.brand}>
+        <Link href="/" className={styles.logo}>
+          PFSTR<em className={styles.underscore}>_</em>
+        </Link>
+        <span className={styles.location}>based in switzerland</span>
+      </div>
 
       <ul className={styles.links}>
         {links.map(({ label, href }) => (
