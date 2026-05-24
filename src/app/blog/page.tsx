@@ -25,7 +25,7 @@ export default async function BlogIndex() {
       <div className={styles.inner}>
         {/* ── Intro ── */}
         <header className={styles.intro}>
-          <div className={styles.eyebrow}>WRITING / JOURNAL_</div>
+          <div className={styles.eyebrow}>WRITING_</div>
           <h1 className={styles.title}>NOTES<em>_</em></h1>
           <div className={styles.hand}>thoughts in progress ✦</div>
           <p className={styles.body}>
