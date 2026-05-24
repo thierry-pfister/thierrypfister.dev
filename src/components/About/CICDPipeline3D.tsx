@@ -28,6 +28,12 @@ export default function CICDPipeline3D() {
   const [drawn, setDrawn] = useState(0) // path segments drawn (0..4)
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setShown(STAGES.length)
+      setDrawn(STAGES.length - 1)
+      return
+    }
+
     let stopped = false
     const ids: ReturnType<typeof setTimeout>[] = []
 

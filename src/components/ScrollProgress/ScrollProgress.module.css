@@ -1,0 +1,24 @@
+.track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 300; /* above nav (which is around z-index 100ish) */
+  pointer-events: none;
+  background: transparent;
+}
+
+.bar {
+  height: 100%;
+  width: 100%;
+  background: var(--gold);
+  transform-origin: left center;
+  transform: scaleX(0);
+  will-change: transform;
+  box-shadow: 0 0 8px rgba(232, 197, 71, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar { box-shadow: none; }
+}

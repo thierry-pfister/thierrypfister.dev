@@ -23,6 +23,11 @@ export default function Contact() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setTyped(EMAIL)
+      setDone(true)
+      return
+    }
     const ctx = gsap.context(() => {
       gsap.from(
         ['#co-eyebrow', '#co-title', '#co-hand'],

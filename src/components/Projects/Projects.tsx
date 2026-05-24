@@ -44,7 +44,7 @@ export default function Projects({ projects }: Props) {
   const activeProject = projects[activeIndex]
 
   return (
-    <section ref={sectionRef} className={styles.section}>
+    <section ref={sectionRef} className={styles.section} id="work">
 
       {/* Background blobs — same language as hero, more muted */}
       <div className={styles.blobLav} />

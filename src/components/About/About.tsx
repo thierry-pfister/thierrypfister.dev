@@ -14,6 +14,7 @@ export default function About() {
   const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const ctx = gsap.context(() => {
       gsap.from(
         ['#ab-eyebrow', '#ab-title', '#ab-hand', '#ab-body', '#ab-badge'],

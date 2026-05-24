@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Nunito, Caveat, DM_Sans, Space_Mono } from 'next/font/google'
 import Nav from '@/components/Nav/Nav'
+import ScrollProgress from '@/components/ScrollProgress/ScrollProgress'
 import './globals.css'
 
 const nunito = Nunito({
@@ -47,6 +48,7 @@ export default function RootLayout({
       className={`${nunito.variable} ${caveat.variable} ${dmSans.variable} ${spaceMono.variable}`}
     >
       <body>
+        <ScrollProgress />
         <Nav />
         {children}
       </body>
