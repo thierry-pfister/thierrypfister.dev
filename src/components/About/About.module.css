@@ -145,10 +145,25 @@
 
 /* ── Mobile ── */
 @media (max-width: 900px) {
-  .knotWrap { display: none; }
+  .knotWrap {
+    position: static;
+    transform: none;
+    width: 100%;
+    max-width: 560px;
+    height: 420px;
+    margin: 40px auto 0;
+    right: auto;
+    top: auto;
+  }
+  .inner { padding-bottom: 80px; }
 }
 
 @media (max-width: 640px) {
-  .inner { padding: 80px 20px 100px; }
+  .inner { padding: 80px 20px 80px; }
   .title { font-size: clamp(52px, 14vw, 90px); }
+  .knotWrap { height: 360px; margin-top: 32px; }
+}
+
+@media (max-width: 420px) {
+  .knotWrap { height: 320px; }
 }
