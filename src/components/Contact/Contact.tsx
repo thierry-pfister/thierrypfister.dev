@@ -10,10 +10,9 @@ gsap.registerPlugin(ScrollTrigger)
 const EMAIL = 'thierrypfister@protonmail.com'
 
 const SOCIALS = [
-  { id: 'github',   label: 'GitHub',   href: 'https://github.com/N4chowastaken' },
-  { id: 'linkedin', label: 'LinkedIn', href: 'https://linkedin.com/in/'         },
-  { id: 'x',        label: 'X',        href: 'https://x.com/'                   },
-  { id: 'readcv',   label: 'Read.cv',  href: 'https://read.cv/'                 },
+  { id: 'github',   label: 'GitHub',   href: 'https://github.com/thierry-pfister' },
+  { id: 'linkedin', label: 'LinkedIn', href: 'https://linkedin.com/in/'           },
+  { id: 'readcv',   label: 'Read.cv',  href: 'https://read.cv/'                   },
 ]
 
 export default function Contact() {
