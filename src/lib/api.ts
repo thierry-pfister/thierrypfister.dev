@@ -4,7 +4,13 @@ import type { Post }    from '@/types/post'
 const BASE = process.env.PFSTR_API_URL ?? 'http://localhost:5199'
 
 export async function fetchProjects(): Promise<Project[]> {
-  const res = await fetch(`${BASE}/api/projects`)
+  let res: Response
+  try {
+    res = await fetch(`${BASE}/api/projects`, { next: { revalidate: 60 } })
+  } catch {
+    return []
+  }
+  if (res.status === 404) return []
   if (!res.ok) throw new Error(`pfstr-core /api/projects → ${res.status}`)
   const data: Project[] = await res.json()
   return data
