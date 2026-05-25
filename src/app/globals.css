@@ -70,3 +70,29 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
+
+/* Anchor offsets — clear the fixed nav when jumping to a section */
+section[id],
+main[id] {
+  scroll-margin-top: 80px;
+}
+
+/* Visible keyboard focus — gold outline w/ offset, only on keyboard nav */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

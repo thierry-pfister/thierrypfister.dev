@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Based in Switzerland — path prototype</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #111;
+    font-family: 'Courier New', monospace;
+    color: #aaa;
+  }
+
+  /* ── Page section mockups ── */
+  .hero {
+    width: 100%; height: 900px;
+    background: #F4F0E8;
+    position: relative;
+    border-bottom: 2px solid #ccc;
+  }
+  .marquee {
+    width: 100%; height: 48px;
+    background: #0A0A0A;
+    border-bottom: 1px solid #333;
+    display: flex; align-items: center;
+    padding: 0 24px;
+    font-size: 10px; letter-spacing: .2em;
+    color: #555;
+  }
+  .projects {
+    width: 100%; height: 900px;
+    background: #EDE8DF;
+    border-bottom: 2px solid #ccc;
+  }
+
+  /* ── Section labels ── */
+  .label {
+    position: absolute;
+    font-size: 9px; letter-spacing: .15em;
+    text-transform: uppercase;
+    color: #999;
+    top: 12px; left: 24px;
+  }
+
+  /* ── Vertical text indicator ── */
+  .vtxt-indicator {
+    position: absolute;
+    right: 18px; top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: center center;
+    white-space: nowrap;
+    font-size: 9px; letter-spacing: .22em;
+    text-transform: uppercase;
+    color: #7B6EC4;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .vtxt-indicator::before,
+  .vtxt-indicator::after {
+    content: '';
+    display: block;
+    width: 40px; height: 1px;
+    background: rgba(0,0,0,0.2);
+  }
+
+  /* ── SVG overlay ── */
+  .path-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  /* ── Page wrapper — relative so SVG can cover all sections ── */
+  .page {
+    position: relative;
+    width: 1440px;
+    margin: 0 auto;
+  }
+
+  /* ── Controls ── */
+  .controls {
+    width: 1440px;
+    margin: 0 auto;
+    padding: 24px;
+    background: #1a1a1a;
+    border-top: 1px solid #333;
+  }
+  .controls h2 {
+    font-size: 11px; letter-spacing: .2em;
+    text-transform: uppercase;
+    color: #7B6EC4;
+    margin-bottom: 12px;
+  }
+  .path-d {
+    font-family: monospace;
+    font-size: 12px;
+    color: #E8C547;
+    background: #0A0A0A;
+    padding: 16px;
+    border-radius: 6px;
+    word-break: break-all;
+    line-height: 1.7;
+  }
+  .hint {
+    margin-top: 12px;
+    font-size: 11px;
+    color: #555;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+
+<div class="page" id="page">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <span class="label">Hero · 100vh</span>
+
+    <!-- Vertical text mockup -->
+    <div class="vtxt-indicator">Based in Switzerland</div>
+  </div>
+
+  <!-- ── MARQUEE ── -->
+  <div class="marquee">
+    BUILD · DEPLOY · REPEAT · thierrypfister.dev · Available for Freelance · Based in Switzerland
+  </div>
+
+  <!-- ── PROJECTS ── -->
+  <div class="projects" style="position:relative;">
+    <span class="label" style="color:#999;">Projects · 100vh</span>
+  </div>
+
+  <!-- ── SVG path overlay — spans all sections ── -->
+  <svg
+    class="path-overlay"
+    id="svg-overlay"
+    viewBox="0 0 1440 1848"
+    preserveAspectRatio="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style="position:absolute; top:0; left:0; width:100%; height:1848px; pointer-events:none;"
+  >
+    <!-- Reference lines -->
+    <line x1="0" y1="900" x2="1440" y2="900" stroke="#333" stroke-width="1" stroke-dasharray="4 6"/>
+    <line x1="0" y1="948" x2="1440" y2="948" stroke="#333" stroke-width="1" stroke-dasharray="4 6"/>
+    <text x="12" y="896" fill="#444" font-size="10" font-family="monospace">— marquee top</text>
+    <text x="12" y="965" fill="#444" font-size="10" font-family="monospace">— projects start</text>
+
+    <!-- Start point marker — center of rotated "Based in Switzerland" text -->
+    <!-- right:18px + rotate(90deg) shifts visual center left by ~half element width -->
+    <circle cx="1285" cy="450" r="5" fill="#7B6EC4" opacity="0.6"/>
+    <text x="1285" y="440" fill="#7B6EC4" font-size="9" font-family="monospace" text-anchor="middle">start · vtxt center</text>
+
+    <!-- "Let's work together" button marker -->
+    <circle cx="710" cy="858" r="5" fill="#E8C547" opacity="0.5"/>
+    <text x="710" y="848" fill="#E8C547" font-size="9" font-family="monospace" text-anchor="middle">Let's work together</text>
+
+    <!-- THE PATH -->
+    <path
+      id="the-path"
+      d="
+        M 1285 450
+        C 1200 620, 920 780, 710 858
+        C 460 930, 120 1060, 44 1350
+      "
+      fill="none"
+      stroke="#7B6EC4"
+      stroke-width="2"
+      stroke-dasharray="6 5"
+      opacity="0.75"
+    />
+
+    <!-- End point marker -->
+    <circle cx="44" cy="1350" r="5" fill="#E8C547" opacity="0.6"/>
+    <text x="100" y="1344" fill="#E8C547" font-size="9" font-family="monospace">far left · projects</text>
+
+    <!-- Animated dot preview -->
+    <circle r="6" fill="#7B6EC4">
+      <animateMotion dur="6s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#the-path"/>
+      </animateMotion>
+    </circle>
+
+  </svg>
+
+</div>
+
+<!-- ── Controls ── -->
+<div class="controls">
+  <h2>Path · d attribute</h2>
+  <div class="path-d" id="path-output">
+    M 1285 450<br>
+    C 1200 620, 920 780, 710 858<br>
+    C 460 930, 120 1060, 44 1350
+  </div>
+  <p class="hint">
+    Coordinate system: 1440 × 1848px (hero 900 + marquee 48 + projects 900).<br>
+    Start (purple dot) = middle of "Based in Switzerland" text, right edge.<br>
+    Gold dot at (710, 858) = "Let's work together" button, bottom of hero.<br>
+    End (gold dot at far left) = deep into the projects section, left edge.
+  </p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,240 @@
+/* ── Page shell ── */
+.page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--cream);
+  overflow: hidden;
+}
+
+/* ── Blobs ── */
+.blobBut {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  width: 50vw; height: 50vw;
+  background: radial-gradient(circle, rgba(240,217,122,.36) 0%, rgba(242,184,154,.22) 52%, transparent 78%);
+  filter: blur(80px);
+  top: -10%; right: -10%;
+  z-index: 1;
+}
+
+.blobLav {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  width: 42vw; height: 42vw;
+  background: radial-gradient(circle, rgba(196,184,232,.30) 0%, rgba(123,110,196,.16) 52%, transparent 78%);
+  filter: blur(72px);
+  bottom: -10%; left: -8%;
+  z-index: 1;
+}
+
+/* ── Inner ── */
+.inner {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 140px 44px 120px;
+}
+
+/* ── Intro ── */
+.intro {
+  margin-bottom: 80px;
+  max-width: 720px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 28px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(72px, 11vw, 160px);
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin: 0 0 28px 0;
+}
+
+.title em {
+  color: var(--gold);
+  font-style: normal;
+}
+
+.hand {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: clamp(22px, 3vw, 36px);
+  color: var(--lav-deep);
+  transform: rotate(-1.5deg);
+  display: inline-block;
+  margin-bottom: 30px;
+}
+
+.body {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(15px, 1.4vw, 18px);
+  line-height: 1.72;
+  color: var(--ink2);
+  max-width: 520px;
+}
+
+/* ── Feed ── */
+.feed {
+  position: relative;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid rgba(20, 18, 15, 0.10);
+}
+
+.row {
+  border-bottom: 1px solid rgba(20, 18, 15, 0.10);
+}
+
+.card {
+  display: block;
+  position: relative;
+  padding: 36px 60px 36px 0;
+  text-decoration: none;
+  color: inherit;
+  transition: padding-left 0.4s var(--ease-spring), background 0.3s;
+}
+
+.card:hover {
+  padding-left: 16px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.cardMeta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 14px;
+  display: flex;
+  gap: 8px;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(28px, 4vw, 52px);
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 12px 0;
+  transition: color 0.3s;
+}
+
+.card:hover .cardTitle {
+  color: var(--lav-deep);
+}
+
+.cardSummary {
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.2vw, 16px);
+  line-height: 1.6;
+  color: var(--ink2);
+  margin: 0 0 16px 0;
+  max-width: 640px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: rgba(20, 18, 15, 0.05);
+  color: var(--ink2);
+  border: 1px solid rgba(20, 18, 15, 0.06);
+}
+
+.arrow {
+  position: absolute;
+  right: 12px;
+  top: 36px;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  color: var(--ink3);
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.3s, transform 0.4s var(--ease-spring), color 0.3s;
+}
+
+.card:hover .arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--gold);
+}
+
+/* ── Empty state ── */
+.empty {
+  text-align: center;
+  padding: 80px 0 40px;
+}
+
+.emptyHand {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: clamp(28px, 4vw, 48px);
+  color: var(--lav-deep);
+  transform: rotate(-1.5deg);
+  display: inline-block;
+  margin-bottom: 24px;
+}
+
+.emptyText {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink2);
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.emptyLink {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+  transition: text-decoration-color 0.2s;
+}
+
+.emptyLink:hover {
+  text-decoration-color: var(--ink);
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .inner { padding: 100px 22px 80px; }
+  .intro { margin-bottom: 50px; }
+  .card { padding: 26px 0; }
+  .card:hover { padding-left: 8px; }
+  .arrow { display: none; }
+}
