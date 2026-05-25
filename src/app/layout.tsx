@@ -35,6 +35,19 @@ const spaceMono = Space_Mono({
 export const metadata: Metadata = {
   title: 'Thierry Pfister — PFSTR_',
   description: 'Dev · designer · builder · Switzerland. Build. Deploy. Repeat.',
+  openGraph: {
+    title: 'Thierry Pfister — PFSTR_',
+    description: 'Dev · designer · builder · Switzerland. Build. Deploy. Repeat.',
+    url: 'https://thierrypfister.dev',
+    siteName: 'PFSTR_',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Thierry Pfister — PFSTR_',
+    description: 'Dev · designer · builder · Switzerland. Build. Deploy. Repeat.',
+  },
 }
 
 export default function RootLayout({
