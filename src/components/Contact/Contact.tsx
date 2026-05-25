@@ -11,7 +11,7 @@ const EMAIL = 'thierrypfister@protonmail.com'
 
 const SOCIALS = [
   { id: 'github',   label: 'GitHub',   href: 'https://github.com/thierry-pfister' },
-  { id: 'linkedin', label: 'LinkedIn', href: 'https://linkedin.com/in/'           },
+  { id: 'linkedin', label: 'LinkedIn', href: 'https://linkedin.com/in/thierry-pfister-44abb9218/' },
   { id: 'readcv',   label: 'Read.cv',  href: 'https://read.cv/'                   },
 ]
 
