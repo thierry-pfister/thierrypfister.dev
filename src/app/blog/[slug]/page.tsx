@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { fetchPost } from '@/lib/api'
 import styles from './page.module.css'
 
@@ -18,7 +20,13 @@ export async function generateMetadata(
   if (!post) return { title: 'Not found — PFSTR_' }
   return {
     title:       `${post.title} — PFSTR_`,
-    description: post.summary,
+    description: post.subtitle ?? post.summary,
+    alternates:  post.canonicalUrl ? { canonical: post.canonicalUrl } : undefined,
+    openGraph: {
+      title:       post.title,
+      description: post.subtitle ?? post.summary,
+      images:      post.coverImage ? [{ url: post.coverImage }] : undefined,
+    },
   }
 }
 
@@ -49,6 +57,11 @@ export default async function BlogPost(
         </div>
 
         <h1 className={styles.title}>{post.title}</h1>
+
+        {post.subtitle && (
+          <p className={styles.subtitle}>{post.subtitle}</p>
+        )}
+
         <p className={styles.summary}>{post.summary}</p>
 
         {post.tags.length > 0 && (
@@ -68,10 +81,11 @@ export default async function BlogPost(
           />
         )}
 
-        {/* TODO: render markdown — drop in `react-markdown` (or similar)
-             when the first post arrives. For scaffolding, raw content shows
-             with whitespace preserved. */}
-        <div className={styles.content}>{post.content}</div>
+        <div className={styles.content}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {post.content}
+          </ReactMarkdown>
+        </div>
 
         <footer className={styles.footer}>
           <Link href="/blog" className={styles.back}>

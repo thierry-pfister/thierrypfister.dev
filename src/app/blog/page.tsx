@@ -60,6 +60,9 @@ export default async function BlogIndex() {
                     </div>
 
                     <h2 className={styles.cardTitle}>{post.title}</h2>
+                    {post.subtitle && (
+                      <p className={styles.cardSubtitle}>{post.subtitle}</p>
+                    )}
                     <p className={styles.cardSummary}>{post.summary}</p>
 
                     {post.tags.length > 0 && (
