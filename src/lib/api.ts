@@ -16,6 +16,12 @@ export async function fetchProjects(): Promise<Project[]> {
   return data
     .filter(p => p.status !== 'Draft' && p.status !== 'Archived')
     .sort((a, b) => a.displayOrder - b.displayOrder)
+    .map(p => ({
+      ...p,
+      coverImageUrl: p.coverImageUrl?.startsWith('/')
+        ? `${BASE}${p.coverImageUrl}`
+        : (p.coverImageUrl ?? null),
+    }))
 }
 
 // ── Posts ────────────────────────────────────────────────────────────────────

@@ -65,10 +65,18 @@ export default function ProjectsCarousel({ projects, onActiveChange }: Props) {
       const loader = new THREE.TextureLoader()
 
       const cardMats = projects.map((p, i) => {
-        const map = p.coverImageUrl
-          ? loader.load(p.coverImageUrl)
-          : (() => { const [c1, c2] = GRADIENTS[i % GRADIENTS.length]!; return makeGradient(c1, c2) })()
-        return new THREE.MeshBasicMaterial({ map, side: THREE.DoubleSide })
+        const [c1, c2] = GRADIENTS[i % GRADIENTS.length]!
+        // Start with the gradient so the card is never black — image swaps in on load
+        const mat = new THREE.MeshBasicMaterial({ map: makeGradient(c1, c2), side: THREE.DoubleSide })
+        if (p.coverImageUrl) {
+          loader.load(
+            p.coverImageUrl,
+            (tex) => { mat.map?.dispose(); mat.map = tex; mat.needsUpdate = true },
+            undefined,
+            () => { /* image failed — gradient already showing, nothing to do */ },
+          )
+        }
+        return mat
       })
       const cardGeos: import('three').CylinderGeometry[] = []
       const cards = Array.from({ length: numCards }, (_, i) => {
