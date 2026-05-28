@@ -62,12 +62,13 @@ export default function ProjectsCarousel({ projects, onActiveChange }: Props) {
         return new THREE.CanvasTexture(cv)
       }
 
-      const cardMats = projects.map((_, i) => {
-        const [c1, c2] = GRADIENTS[i % GRADIENTS.length]!
-        return new THREE.MeshBasicMaterial({
-          map: makeGradient(c1, c2),
-          side: THREE.DoubleSide,
-        })
+      const loader = new THREE.TextureLoader()
+
+      const cardMats = projects.map((p, i) => {
+        const map = p.coverImageUrl
+          ? loader.load(p.coverImageUrl)
+          : (() => { const [c1, c2] = GRADIENTS[i % GRADIENTS.length]!; return makeGradient(c1, c2) })()
+        return new THREE.MeshBasicMaterial({ map, side: THREE.DoubleSide })
       })
       const cardGeos: import('three').CylinderGeometry[] = []
       const cards = Array.from({ length: numCards }, (_, i) => {

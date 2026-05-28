@@ -9,6 +9,7 @@ export type Project = {
   slug: string
   summary: string
   content: string | null
+  coverImageUrl: string | null
   status: 'Draft' | 'Published' | 'Active' | 'Archived'
   techStack: string[]
   links: ProjectLink[]
