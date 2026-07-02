@@ -3,6 +3,20 @@ import type { Post }    from '@/types/post'
 
 const BASE = process.env.PFSTR_API_URL ?? 'http://localhost:5199'
 
+// pfstr-core stores asset URLs with whatever host they were uploaded through
+// (e.g. the LAN IP of the home server) — unreachable and mixed-content-blocked
+// on production. Rebase its /static/ assets onto this environment's API host.
+function rebaseAssetUrl(url: string | null): string | null {
+  if (!url) return null
+  if (url.startsWith('/')) return `${BASE}${url}`
+  try {
+    const { pathname, search } = new URL(url)
+    return pathname.startsWith('/static/') ? `${BASE}${pathname}${search}` : url
+  } catch {
+    return url
+  }
+}
+
 export async function fetchProjects(): Promise<Project[]> {
   let res: Response
   try {
@@ -16,12 +30,7 @@ export async function fetchProjects(): Promise<Project[]> {
   return data
     .filter(p => p.status !== 'Draft' && p.status !== 'Archived')
     .sort((a, b) => a.displayOrder - b.displayOrder)
-    .map(p => ({
-      ...p,
-      coverImageUrl: p.coverImageUrl?.startsWith('/')
-        ? `${BASE}${p.coverImageUrl}`
-        : (p.coverImageUrl ?? null),
-    }))
+    .map(p => ({ ...p, coverImageUrl: rebaseAssetUrl(p.coverImageUrl) }))
 }
 
 // ── Posts ────────────────────────────────────────────────────────────────────
